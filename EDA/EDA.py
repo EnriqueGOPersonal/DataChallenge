@@ -29,11 +29,21 @@ base_5 = pd.read_csv(r"./data/Base5.csv", sep = ";", parse_dates = ["MES_COTIZAC
 base_4["ST_CREDITO"] = base_4["ST_CREDITO"].astype(str)
 base_5[["CD_DIVISA", "TP_TARJETA"]] = base_5[["CD_DIVISA", "TP_TARJETA"]].astype(str)
 
+# Depurando Trainset 
+
+base_1 = base_1.groupby(['MES_COTIZACION', 'COD_CLIENTE', 'GARANTIA', 'IMPORTE',
+       'PLAZO', 'TEA_MINIMA'], as_index = False).agg({"FLG_DESEMBOLSO": "max"})
+
+base_1 = base_1.sort_values(["MES_COTIZACION", "COD_CLIENTE"], ascending = False)\
+    .drop_duplicates(["COD_CLIENTE"], keep = "first")
+
+base_1.FLG_DESEMBOLSO.value_counts()
+
 # Exploratory Data Analysis
 ## Base_1
 
 #Cantidad de clientes unicos / longitud del df
-len(base_1.COD_CLIENTE.unique()) / base_1.shape[0]
+len(base_1.COD_CLIENTE.unique())/ base_1.shape[0]
 # PLT no son únicos los clientes
 
 ## Base_2
@@ -72,7 +82,7 @@ def joinColumns(df1, df2):
     df = df.loc[(df["MES_COTIZACION_y"] <= df["MES_COTIZACION_x"]) |
                 (df["MES_COTIZACION_y"].isnull()), :]
     df = df.sort_values("MES_COTIZACION_y", ascending = False)
-    df = df.drop_duplicates(["COD_CLIENTE", "COD_SOL"], keep = "first")
+    df = df.drop_duplicates(["COD_CLIENTE"], keep = "first")
     df = df.drop("MES_COTIZACION_y", axis = 1)
     df = df.rename(columns = {"MES_COTIZACION_x": "MES_COTIZACION"})
     return df
@@ -82,15 +92,15 @@ train = joinColumns(base_1, base_2)
 def joinColumns2(df1, df2):
 
     df = df1.merge(df2, on = "COD_CLIENTE", how = "left", indicator = True)
-    dfx = df.loc[df["MES_COTIZACION_y"] <= df["MES_COTIZACION_x"], :]
+    dfx = df.loc[df["MES_DATA"] <= df["MES_COTIZACION_x"], :]
     dfy = df.loc[df['_merge'] == 'left_only', :]
-    dfz = df.loc[df["MES_COTIZACION_y"] > df["MES_COTIZACION_x"], df.columns[:len(df1.columns)]]
+    dfz = df.loc[df["MES_DATA"] > df["MES_COTIZACION_x"], df.columns[:len(df1.columns)]]
     # print(dfx.dtypes)
     # print(dfy.dtypes)
     # print(dfz.dtypes)
     df = pd.concat([dfx, dfy, dfz], sort = False).drop("_merge", axis = 1)
     df = df.sort_values("MES_DATA", ascending = False)    
-    df = df.drop_duplicates(["COD_CLIENTE", "COD_SOL"], keep = "first")
+    df = df.drop_duplicates(["COD_CLIENTE"], keep = "first")
     df = df.drop("MES_COTIZACION_y", axis = 1)
     df = df.rename(columns = {"MES_COTIZACION_x": "MES_COTIZACION"})
 
@@ -103,9 +113,9 @@ def joinColumns3(df1, df2, agg_type = "num"):
     train_columns = df1.columns.to_list()
     
     df = df1.merge(df2, on = "COD_CLIENTE", how = "left", indicator = True)
-    dfx = df.loc[df["MES_COTIZACION_y"] <= df["MES_COTIZACION_x"], :]
+    dfx = df.loc[df["MES_DATA_y"] <= df["MES_COTIZACION_x"], :]
     dfy = df.loc[df['_merge'] == 'left_only', :]
-    dfz = df.loc[df["MES_COTIZACION_y"] > df["MES_COTIZACION_x"], df.columns[:len(df1.columns)]]
+    dfz = df.loc[df["MES_DATA_y"] > df["MES_COTIZACION_x"], df.columns[:len(df1.columns)]]
     df = pd.concat([dfx, dfy, dfz], sort = False).drop("_merge", axis = 1)
     
     df.columns = train_columns + df.columns[len(train_columns):].to_list()
@@ -122,20 +132,20 @@ def joinColumns3(df1, df2, agg_type = "num"):
     # print("Columnas categóricas")
     # print(cate)
     
-    df_num = df[["COD_SOL"] + nume]
-    df_cate = df[["COD_SOL"] + cate]
+    df_num = df[["COD_CLIENTE"] + nume]
+    df_cate = df[["COD_CLIENTE"] + cate]
     try:
-        df_gr_m_num = df_num.groupby("COD_SOL", as_index = False).mean()
+        df_gr_m_num = df_num.groupby("COD_CLIENTE", as_index = False).mean()
         if agg_type == "num":
-            df1 = df1.merge(df_gr_m_num, on = "COD_SOL", how = "left")
+            df1 = df1.merge(df_gr_m_num, on = "COD_CLIENTE", how = "left")
     except Exception as e:
         print(e)
         pass
     
     try: 
-        df_gr_c_cate = df_cate.groupby("COD_SOL", as_index = False).count()
+        df_gr_c_cate = df_cate.groupby("COD_CLIENTE", as_index = False).count()
         if agg_type == "cat":
-            df1 = df1.merge(df_gr_c_cate, on = "COD_SOL", how = "left")
+            df1 = df1.merge(df_gr_c_cate, on = "COD_CLIENTE", how = "left")
         
     except Exception as e:
         print(e)
@@ -236,5 +246,6 @@ p_values.plot.bar()
 # One hot encode las categoricas
 # * Evaluar normalidad "skewness"
 # Logistic regression y RF 
+
 
 
