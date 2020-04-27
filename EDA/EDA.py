@@ -26,6 +26,9 @@ base_3 = pd.read_csv(r"./data/Base3.csv", sep = ";", parse_dates = ["MES_COTIZAC
 base_4 = pd.read_csv(r"./data/Base4.csv", sep = ";", parse_dates = ["MES_COTIZACION", "MES_DATA"], date_parser = dateparse) # Base de saldos en el Sistema Financiero
 base_5 = pd.read_csv(r"./data/Base5.csv", sep = ";", parse_dates = ["MES_COTIZACION", "MES_DATA"], date_parser = dateparse) # Base de consumos con tarjeta
 
+base_4["ST_CREDITO"] = base_4["ST_CREDITO"].astype(str)
+base_5[["CD_DIVISA", "TP_TARJETA"]] = base_5[["CD_DIVISA", "TP_TARJETA"]].astype(str)
+
 # Exploratory Data Analysis
 ## Base_1
 
@@ -41,7 +44,7 @@ len(base_2.COD_CLIENTE.unique())/base_2.shape[0]
 ## Base_3
 #Cantidad de clientes unicos / longitud del df
 len(base_3.COD_CLIENTE.unique())/base_3.shape[0]
-# PLT son únicos los clientes
+# PLT no son únicos los clientes
 
 ## Base_4
 #Cantidad de clientes unicos / longitud del df
@@ -51,7 +54,7 @@ len(base_4.COD_CLIENTE.unique())/base_4.shape[0]
 ## Base_5
 # Cantidad de clientes unicos / longitud del df
 len(base_5.COD_CLIENTE.unique())/base_5.shape[0]
-# PLT son únicos los clientes
+# PLT no son únicos los clientes
 
 # En ningún df hay codigos de clientes nulos
 base_1.COD_CLIENTE.isnull().sum()
@@ -60,6 +63,9 @@ base_3.COD_CLIENTE.isnull().sum()
 base_4.COD_CLIENTE.isnull().sum()
 base_5.COD_CLIENTE.isnull().sum()
 
+# "---------------------------------------------------------"
+# "--------------------UNIENDO DATAFRAMES ------------------"
+# "---------------------------------------------------------"
 
 def joinColumns(df1, df2):
     df = df1.merge(df2, on = "COD_CLIENTE", how = "left")
@@ -92,52 +98,59 @@ def joinColumns2(df1, df2):
 
 train = joinColumns2(train, base_3)
 
-# CODIGO JULIO
-
-def joinColumns3(df1, df2):
-
+def joinColumns3(df1, df2, agg_type = "num"):
+    
+    train_columns = df1.columns.to_list()
+    
     df = df1.merge(df2, on = "COD_CLIENTE", how = "left", indicator = True)
     dfx = df.loc[df["MES_COTIZACION_y"] <= df["MES_COTIZACION_x"], :]
     dfy = df.loc[df['_merge'] == 'left_only', :]
     dfz = df.loc[df["MES_COTIZACION_y"] > df["MES_COTIZACION_x"], df.columns[:len(df1.columns)]]
     df = pd.concat([dfx, dfy, dfz], sort = False).drop("_merge", axis = 1)
+    
+    df.columns = train_columns + df.columns[len(train_columns):].to_list()
 
-    df.columns = df1.columns.to_list() + df.columns[len(df1.columns):].to_list()
+    # Separación entre predictores numéricos y categóricos
 
-    df_gr_m = df.groupby(df1.columns.to_list(), as_index = False).mean()
+    nume = df.columns[(df.dtypes == "int64") | (df.dtypes == "float64")].to_list()
+    nume = [col for col in nume if col not in train_columns]
+    print("Columnas numéricas")
+    print(nume)
+    
+    cate = df.columns[(df.dtypes == "category") | (df.dtypes == "object")].to_list()
+    cate = [col for col in cate if col not in train_columns]
+    print("Columnas categóricas")
+    print(cate)
+    
+    df_num = df[train_columns + nume]
+    print(df_num[nume].sort_values(nume))
+    df_cate = df[train_columns + cate]
 
-    df1 = df1.merge(df_gr_m, on = df1.columns.to_list(), how = "left")
+    try:
+        df_gr_m_num = df_num.groupby(train_columns, as_index = False).mean()
+        if agg_type == "num":
+            df1 = df1.merge(df_gr_m_num, on = train_columns, how = "left")
+    
+    except Exception as e:
+        print(e)
+        pass
+    
+    try: 
+        df_gr_c_cate = df_cate.groupby(train_columns, as_index = False).count()
+
+        if agg_type == "cat":
+            df1 = df1.merge(df_gr_c_cate, on = train_columns, how = "left")
+        
+    except Exception as e:
+        print(e)
+        pass
     
     return df1
 
-    # df = df.drop(["MES_COTIZACION_y", "MES_DATA_y"], axis = 1)
-    # df = df.rename(columns = {"MES_COTIZACION_x" : "MES_COTIZACION", "MES_DATA_x" : "MES_DATA"})
+train = joinColumns3(train, base_4, "num")
+train = joinColumns3(train, base_5, "num")
 
-train  = joinColumns3(train, base_4)
-
-# CODIGO URI
-
-def joinColumns3(df1, df2):
-
-   df = df1.merge(df2, on = "COD_CLIENTE", how = "left", indicator = True)
-   
-   dfx = df.loc[df["MES_COTIZACION_y"] <= df["MES_COTIZACION_x"], :]
-   dfy = df[df['_merge'] == 'left_only']
-   dfz = df.loc[df["MES_COTIZACION_y"] > df["MES_COTIZACION_x"], :]
-   for col in df2.columns:
-       if col != "COD_CLIENTE":
-           dfz[col] = np.nan
-
-   df = pd.concat([dfx, dfy, dfz]).sort_values("MES_DATA", ascending = False)  
-   df = df.drop_duplicates(["COD_CLIENTE", "COD_SOL"], keep = "first")
-   df = df.drop(["MES_COTIZACION_y", "MES_DATA_y", "_merge"], axis = 1)
-   df = df.rename(columns = {"MES_COTIZACION_x": "MES_COTIZACION", "MES_DATA_x" : "MES_DATA"})
-
-   return df
-
-train = joinColumns(train, base_5)
-
-# AQUÍ CÓDIGO QUIQUE
+# "---------------------------------------------------------"
 
 # Dividiendo columnas por tipo
 bool_cols = [
@@ -156,7 +169,7 @@ bool_cols = [
 numeric_cols = train.dtypes[train.dtypes == np.float64].index.to_list() +\
     train.dtypes[train.dtypes == np.int64].index.to_list()
 
-cat_cols = train.dtypes[train.dtypes == "O"].index[2:].to_list()
+cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list()
 
 # Análisis Columnas numéricas
 
@@ -168,12 +181,14 @@ droped_corr_cols = []
 
 for col in corrmat.columns:
     if col not in droped_corr_cols:
+        a = corrmat[col][(abs(corrmat[col]) > 0.9) & (abs(corrmat[col]) < 1)]
         for colname in a.index:
             if colname in droped_corr_cols:
                 pass
             else:
                 print(colname + " se correlaciona mucho con " + col +
-                      " por lo tanto nos deshacemos de ella por aportar\n la misma información")
+                      "con un PCC de " + str(corrmat.loc[colname, col]) + 
+                      "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
                 droped_corr_cols.append(colname)
                 corrmat = corrmat.drop(colname, axis = 1)
 
