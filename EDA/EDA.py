@@ -168,6 +168,12 @@ numeric_cols = train.dtypes[train.dtypes == np.float64].index.to_list() +\
 cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list()
 
 # Análisis Columnas numéricas
+train_num = train.copy()
+for col in numeric_cols:
+    if train[col].isna().sum()/len(train[col]) > .15:
+        print(str(train[col].isna().sum()/len(train[col])), col)
+        train_num.drop(col, axis = 1)
+
 
 # Eliminando una de cada dos columnas numéricas correlacionadas
 # (Para facilitar análisis)
