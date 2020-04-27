@@ -114,32 +114,28 @@ def joinColumns3(df1, df2, agg_type = "num"):
 
     nume = df.columns[(df.dtypes == "int64") | (df.dtypes == "float64")].to_list()
     nume = [col for col in nume if col not in train_columns]
-    print("Columnas numéricas")
-    print(nume)
+    # print("Columnas numéricas")
+    # print(nume)
     
     cate = df.columns[(df.dtypes == "category") | (df.dtypes == "object")].to_list()
     cate = [col for col in cate if col not in train_columns]
-    print("Columnas categóricas")
-    print(cate)
+    # print("Columnas categóricas")
+    # print(cate)
     
-    df_num = df[train_columns + nume]
-    print(df_num[nume].sort_values(nume))
-    df_cate = df[train_columns + cate]
-
+    df_num = df[["COD_SOL"] + nume]
+    df_cate = df[["COD_SOL"] + cate]
     try:
-        df_gr_m_num = df_num.groupby(train_columns, as_index = False).mean()
+        df_gr_m_num = df_num.groupby("COD_SOL", as_index = False).mean()
         if agg_type == "num":
-            df1 = df1.merge(df_gr_m_num, on = train_columns, how = "left")
-    
+            df1 = df1.merge(df_gr_m_num, on = "COD_SOL", how = "left")
     except Exception as e:
         print(e)
         pass
     
     try: 
-        df_gr_c_cate = df_cate.groupby(train_columns, as_index = False).count()
-
+        df_gr_c_cate = df_cate.groupby("COD_SOL", as_index = False).count()
         if agg_type == "cat":
-            df1 = df1.merge(df_gr_c_cate, on = train_columns, how = "left")
+            df1 = df1.merge(df_gr_c_cate, on = "COD_SOL", how = "left")
         
     except Exception as e:
         print(e)
