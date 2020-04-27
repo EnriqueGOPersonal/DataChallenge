@@ -201,11 +201,10 @@ for col in numeric_cols:
 ## Análisis Columnas categóricas
 
 for col in cat_cols:
-    train[col].value_counts().plot.bar(title = col, rot = 0)
-    # s = train.describe()[col].to_string() + \
-    #     "\nMissing Values: " + str(train.isnull().sum()[col]) + \
-    #     "\nMissing Values %: " + str(round(train.isnull().sum()[col]/len(train),4))
-    # plt.figtext(1, 0.5, s)
+    train[col].value_counts().plot.bar(title = col)
+    s = "\nMissing Values: " + str(train.isnull().sum()[col]) + \
+        "\nMissing Values %: " + str(round(train.isnull().sum()[col]/len(train),4))
+    plt.figtext(1, 0.5, s)
     plt.show()
 
 imp = SimpleImputer(strategy="most_frequent")
@@ -213,18 +212,23 @@ imp.fit_transform(df)
 
 # Chi Cuadrada
 
-for col in cat_cols:
-    label_encoder = LabelEncoder()
-    train[col] = label_encoder.fit_transform(train[col])
-
 label = 'FLG_DESEMBOLSO'
+df = train[cat_cols + [label]].copy()
+for col in cat_cols:
+    df.loc[df[col].isnull(), col] = "NaN"
+    label_encoder = LabelEncoder()
+    df[col] = label_encoder.fit_transform(df[col])
 
-X = train[cat_cols + bool_cols].drop(label,axis=1)
-y = train[label]
-
+X = df.drop(label, axis = 1)
+y = df[label]
 chi_scores = chi2(X,y)
-
 p_values = pd.Series(chi_scores[1],index = X.columns)
 p_values.sort_values(ascending = False , inplace = True)
-
 p_values.plot.bar()
+
+# Imputer numericas con mediana
+# One hot encode las categoricas
+# * Evaluar normalidad "skewness"
+# Logistic regression y RF 
+
+
