@@ -168,10 +168,10 @@ numeric_cols = train.dtypes[train.dtypes == np.float64].index.to_list() +\
 cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list()
 
 # Análisis Columnas numéricas
-train_num = train.copy()
+train_num = train[numeric_cols].copy()
 for col in numeric_cols:
-    if train[col].isna().sum()/len(train[col]) > .15:
-        print(str(train[col].isna().sum()/len(train[col])), col)
+    if train_num[col].isna().sum()/len(train_num[col]) > .15:
+        print(str(train_num[col].isna().sum()/len(train_num[col])), col)
         train_num.drop(col, axis = 1)
 
 
