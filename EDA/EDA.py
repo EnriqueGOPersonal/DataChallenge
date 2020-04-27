@@ -177,79 +177,100 @@ numeric_cols = train.dtypes[train.dtypes == np.float64].index.to_list() +\
 
 cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list()
 
-
-# for month in dt_range:
-    
-# Análisis Columnas numéricas
-
-train_num = train[numeric_cols].copy()
-for col in numeric_cols:
-    if train_num[col].isna().sum()/len(train_num[col]) > .15:
-        print(str(train_num[col].isna().sum()/len(train_num[col])), col)
-        train_num = train_num.drop(col, axis = 1)
-
-
-# Eliminando una de cada dos columnas numéricas correlacionadas
-# (Para facilitar análisis)
-
-corrmat = train[numeric_cols].corr()
-droped_corr_cols = []
-
-for col in corrmat.columns:
-    if col not in droped_corr_cols:
-        a = corrmat[col][(abs(corrmat[col]) > 0.9) & (abs(corrmat[col]) < 1)]
-        for colname in a.index:
-            if colname in droped_corr_cols:
-                pass
-            else:
-                print(colname + " se correlaciona mucho con " + col +
-                      "con un PCC de " + str(corrmat.loc[colname, col]) + 
-                      "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
-                droped_corr_cols.append(colname)
-                corrmat = corrmat.drop(colname, axis = 1)
-
-# Graficando histogramas de columnas numéricas
-
-for col in numeric_cols:
-    train[col].plot.hist(title = col)
-    s = train.describe()[col].to_string() + \
-        "\nMissing Values: " + str(train.isnull().sum()[col]) + \
-        "\nMissing Values %: " + str(round(train.isnull().sum()[col]/len(train),4))
-    plt.figtext(1, 0.5, s)
-    plt.show()
-
-## Análisis Columnas categóricas
-
-for col in cat_cols:
-    train[col].value_counts().plot.bar(title = col)
-    s = "\nMissing Values: " + str(train.isnull().sum()[col]) + \
-        "\nMissing Values %: " + str(round(train.isnull().sum()[col]/len(train),4))
-    plt.figtext(1, 0.5, s)
-    plt.show()
-
-imp = SimpleImputer(strategy="most_frequent")
-imp.fit_transform(df)
-
-# Chi Cuadrada
+dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(), freq = "1MS")
 
 label = 'FLG_DESEMBOLSO'
-df = train[cat_cols + [label]].copy()
-for col in cat_cols:
-    df.loc[df[col].isnull(), col] = "NaN"
-    label_encoder = LabelEncoder()
-    df[col] = label_encoder.fit_transform(df[col])
 
-X = df.drop(label, axis = 1)
-y = df[label]
-chi_scores = chi2(X,y)
-p_values = pd.Series(chi_scores[1],index = X.columns)
-p_values.sort_values(ascending = False , inplace = True)
-p_values.plot.bar()
+for month in dt_range:
+    print(month)
+    train_temp = train[train.MES_COTIZACION <= month]
+    
+    # Análisis Columnas numéricas
 
-# Imputer numericas con mediana
-# One hot encode las categoricas
-# * Evaluar normalidad "skewness"
-# Logistic regression y RF 
+    for col in numeric_cols:
+        if train_temp[col].isna().sum()/len(train_temp[col]) > 0.40:
+            print(str(train_temp[col].isna().sum()/len(train_temp[col])), col)
+            train_temp = train_temp.drop(col, axis = 1)
 
+    
+    # Eliminando una de cada dos columnas numéricas correlacionadas (Para facilitar análisis)
+    
+    corrmat = train_temp[numeric_cols].corr()
+    droped_corr_cols = []
+    
+    for col in corrmat.columns:
+        if col not in droped_corr_cols:
+            a = corrmat[col][(abs(corrmat[col]) > 0.9) & (abs(corrmat[col]) < 1)]
+            for colname in a.index:
+                if colname in droped_corr_cols:
+                    pass
+                else:
+                    print(colname + " se correlaciona mucho con " + col +
+                          "con un PCC de " + str(corrmat.loc[colname, col]) + 
+                          "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
+                    droped_corr_cols.append(colname)
+                    corrmat = corrmat.drop(colname, axis = 1)
+    train_temp = train_temp.drop(droped_corr_cols, axis = 1)
+    
+    #-----------------------------------------
+    # codigo Uri
+    # Graficando histogramas de columnas numéricas
+    
+    # for col in numeric_cols:
+    #     train[col].plot.hist(title = col)
+    #     s = train.describe()[col].to_string() + \
+    #         "\nMissing Values: " + str(train.isnull().sum()[col]) + \
+    #         "\nMissing Values %: " + str(round(train.isnull().sum()[col]/len(train),4))
+    #     plt.figtext(1, 0.5, s)
+    #     plt.show()
+    # * Evaluar normalidad "skewness"
 
+    # ## Análisis Columnas categóricas
+    
+    # for col in cat_cols:
+    #     train[col].value_counts().plot.bar(title = col)
+    #     s = "\nMissing Values: " + str(train.isnull().sum()[col]) + \
+    #         "\nMissing Values %: " + str(round(train.isnull().sum()[col]/len(train),4))
+    #     plt.figtext(1, 0.5, s)
+    #     plt.show()
+    #-----------------------------------------
+    
+    # codigo quique
+    
+    imp_cats = SimpleImputer(strategy="most_frequent")
+    # Imputer numericas con mediana
+    imp_nums.fit()
+    
+    
+    # Chi Cuadrada
+    
+    df = train[cat_cols + [label]].copy()
+    for col in cat_cols:
+        df.loc[df[col].isnull(), col] = "NaN"
+        label_encoder = LabelEncoder()
+        df[col] = label_encoder.fit_transform(df[col])
+    
+    X = df.drop(label, axis = 1)
+    y = df[label]
+    chi_scores = chi2(X,y)
+    p_values = pd.Series(chi_scores[1],index = X.columns)
+    p_values.sort_values(ascending = False , inplace = True)
+    p_values.plot.bar()
+
+    #-----------------------------------------
+    # Codigo Julio
+    
+    # One hot encode las categoricas
+    # Logistic regression y RF
+    # Cross validation
+    
+    # Pipe[Imputer cats, Imputer nums, Dropper, One Hot, Modelo]
+        
+    #-----------------------------------------
+        
+    # evaluator 
+    # roc_curve plot
+    # 
+
+    
 
