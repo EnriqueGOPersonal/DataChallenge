@@ -156,9 +156,12 @@ def joinColumns3(df1, df2, agg_type = "num"):
 train = joinColumns3(train, base_4, "num")
 train = joinColumns3(train, base_5, "num")
 
+train.MES_COTIZACION = train.MES_COTIZACION + pd.offsets.MonthBegin(0)
+
 # "---------------------------------------------------------"
 
 # Dividiendo columnas por tipo
+
 bool_cols = [
 "FLG_DESEMBOLSO",
 "USO_BI_M0",
@@ -169,20 +172,21 @@ bool_cols = [
 "USO_BM_M2"
 ]
 
-# for col in bool_cols:
-#     train[col] = train[col].astype(bool)
-
 numeric_cols = train.dtypes[train.dtypes == np.float64].index.to_list() +\
     train.dtypes[train.dtypes == np.int64].index.to_list()
 
 cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list()
 
+
+# for month in dt_range:
+    
 # Análisis Columnas numéricas
+
 train_num = train[numeric_cols].copy()
 for col in numeric_cols:
     if train_num[col].isna().sum()/len(train_num[col]) > .15:
         print(str(train_num[col].isna().sum()/len(train_num[col])), col)
-        train_num.drop(col, axis = 1)
+        train_num = train_num.drop(col, axis = 1)
 
 
 # Eliminando una de cada dos columnas numéricas correlacionadas
