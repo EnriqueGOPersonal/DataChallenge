@@ -37,6 +37,8 @@ class MultiColumnDropper():
         If no columns specified, returns X
         columns in X.
         '''
+        print("argumento pasado a transformer")
+        print(self.columns)
         output = X.copy()
         if self.columns is not None:
             for col in self.columns:
@@ -46,6 +48,7 @@ class MultiColumnDropper():
                     pass
         else:
             pass
+        
         return output
 
     def fit_transform(self,X,y=None):
@@ -204,25 +207,23 @@ train.MES_COTIZACION = train.MES_COTIZACION + pd.offsets.MonthBegin(0)
 
 # Dividiendo columnas por tipo
 
-bool_cols = [
-"FLG_DESEMBOLSO"
-]
+label_cols = ["FLG_DESEMBOLSO"]
+label = 'FLG_DESEMBOLSO'
 
 numeric_cols = train.dtypes[train.dtypes == np.float64].index.to_list() +\
     train.dtypes[train.dtypes == np.int64].index.to_list()
-numeric_cols = [col for col in numeric_cols if col not in bool_cols]
+numeric_cols = [col for col in numeric_cols if col not in label_cols]
 
-cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list() + bool_cols
+cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list()
 
 dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(), freq = "1MS")
 
-label = 'FLG_DESEMBOLSO'
+
 
 for month in dt_range:
     print(month)
     stages = []
     train_temp = train[train.MES_COTIZACION <= month]
-    print(len(train_temp))
 
     # Feature Selection 
     
@@ -231,7 +232,7 @@ for month in dt_range:
     droped_null_cols = []
     for col in (cat_cols + numeric_cols):
         if train_temp[col].isna().sum()/len(train_temp[col]) > 0.40:
-            print(str(train_temp[col].isna().sum()/len(train_temp[col])), col)
+            # print(str(train_temp[col].isna().sum()/len(train_temp[col])), col)
             droped_null_cols.append(col)
 
     # Análisis Columnas numéricas
@@ -310,7 +311,7 @@ for month in dt_range:
     
     # Feature Selection con Chi Cuadrada
     
-    df = train[cat_cols].copy()
+    df = train[cat_cols + label_cols].copy()
     for col in cat_cols:
         df.loc[df[col].isnull(), col] = "NaN"
         df[col] = LabelEncoder().fit_transform(df[col])
@@ -319,17 +320,20 @@ for month in dt_range:
     y = df[label]
     chi_scores = chi2(X,y)
     p_values = pd.Series(chi_scores[1], index = X.columns)
-    droped_chi2_cols = p_values[p_values > 0.05].values
+    droped_chi2_cols = p_values[p_values > 0.05].to_list()
 
     p_values.sort_values(ascending = False , inplace = True)
     p_values.plot.bar()
     plt.show()
-
+    
+    droped_cols = droped_null_cols + droped_corr_cols + droped_ttest_cols + droped_chi2_cols
+    # print(droped_cols)
+    
+    final_num_cols = [col for col in numeric_cols if col not in droped_cols]
+    final_cat_cols = [col for col in cat_cols if col not in droped_cols]
+    
     feature_selector = Pipeline(steps = [
-        ("null_dropper", MultiColumnDropper(droped_null_cols)),
-        ("corr_dropper", MultiColumnDropper(droped_corr_cols)),
-        ("ttest_dropper", MultiColumnDropper(droped_ttest_cols)),
-        ("chi2_dropper", MultiColumnDropper(droped_chi2_cols))])
+        ("null_dropper", MultiColumnDropper(droped_cols))])
     
     # Imputer categóricas con más frecuente
     numeric_transformer = Pipeline(steps=[
@@ -343,17 +347,16 @@ for month in dt_range:
     
     preprocessor = ColumnTransformer(
         transformers=[
-            ("feature_select", feature_selector),
+            ("feature_select", feature_selector, droped_cols),
             ('num', numeric_transformer, numeric_cols),
-            ('cat', categorical_transformer, cat_cols)])
-
+            ("cat", categorical_transformer, cat_cols)])
+        
     param_grid_lr = {
         'classifier__C': [0.1, 1.0, 10, 100],
     }
 
     param_grid_rf = {
-        'classifier__n_estimators': [30, 40, 50],
-        'classifier__depth': [25, 30, 35]
+        'classifier__n_estimators': [150, 200]
     }
 
     lr_clf = Pipeline(steps=[('preprocessor', preprocessor),
@@ -363,27 +366,18 @@ for month in dt_range:
     rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
                           ('classifier', RandomForestClassifier(n_jobs = -1))])    
     
-    grid_search = GridSearchCV(rf_clf, param_grid_lr, cv = 4, n_jobs = -1, scoring = "neg_log_loss")
+    grid_search = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring = "accuracy")
     
-    X_train = train_temp[[col for col in train_temp.columns if col != label]]
+    x_train = train_temp[[col for col in train_temp.columns if col != label]]
     y_train = train_temp[label]
-    grid_search.fit(X_train, y_train)
-    
+
+    grid_search.fit(x_train, y_train)
+
+
     #-----------------------------------------
-    # Codigo Julio
     
-    # One hot encode las categoricas
-    # Logistic regression y RF
-    # Cross validation
-    
-    # Pipe[Imputer cats, Imputer nums, Dropper, One Hot, Modelo]
-        
-    #-----------------------------------------
-        
     # evaluator 
     evaluation_df = pd.DataFrame(grid_search.cv_results_)
+    print(grid_search.best_score_)
     # roc_curve plot
-    # 
-
-    
 
