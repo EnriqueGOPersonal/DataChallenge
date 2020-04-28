@@ -125,7 +125,7 @@ def joinColumns(df1, df2):
     df = df.loc[(df["MES_COTIZACION_y"] <= df["MES_COTIZACION_x"]) |
                 (df["MES_COTIZACION_y"].isnull()), :]
     df = df.sort_values("MES_COTIZACION_y", ascending = False)
-    df = df.drop_duplicates(["COD_CLIENTE"], keep = "first")
+    df = df.drop_duplicates(["COD_CLIENTE", "MES_COTIZACION_x"], keep = "first")
     df = df.drop("MES_COTIZACION_y", axis = 1)
     df = df.rename(columns = {"MES_COTIZACION_x": "MES_COTIZACION"})
     return df
@@ -319,7 +319,7 @@ for month in dt_range:
     y = df[label]
     chi_scores = chi2(X,y)
     p_values = pd.Series(chi_scores[1], index = X.columns)
-    droped_chi2_cols = p_values[p_values > 0.05].to_list()
+    droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
 
     p_values.sort_values(ascending = False , inplace = True)
     p_values.plot.bar()
@@ -336,10 +336,10 @@ for month in dt_range:
     
     # Imputer categóricas con más frecuente
     numeric_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='median'))
+        ('imputer', SimpleImputer(strategy='median')),
         ('scaler', StandardScaler())
         ])
-    
+
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
         ('onehot', OneHotEncoder(handle_unknown='ignore'))])
@@ -347,8 +347,9 @@ for month in dt_range:
     preprocessor = ColumnTransformer(
         transformers=[
             ("feature_select", feature_selector, droped_cols),
-            ('num', numeric_transformer, numeric_cols),
-            ("cat", categorical_transformer, cat_cols)])
+            ("cat", categorical_transformer, final_cat_cols),
+            ('num', numeric_transformer, final_num_cols)])
+    preprocessor.fit_transform(x_train)
         
     param_grid_lr = {
         'classifier__C': [0.1, 1.0, 10, 100],
@@ -381,7 +382,8 @@ for month in dt_range:
     # evaluator
     evaluation_df_rf = pd.DataFrame(grid_search_rf.cv_results_)
     evaluation_df_lr = pd.DataFrame(grid_search_lr.cv_results_)
-    
+    print(grid_search_rf.best_score_)
+    print(grid_search_lr.best_score_)
     # CODIGO JULIO
     # Feature importance plot
     # grid_search.best_estimator_["classifier"]
