@@ -224,7 +224,7 @@ dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(),
 
 
 
-for month in dt_range:
+for month in dt_range[:2]:
     print(month)
     stages = []
     train_temp = train[train.MES_COTIZACION <= month]
@@ -328,8 +328,8 @@ for month in dt_range:
     droped_cols = droped_null_cols + droped_corr_cols + droped_ttest_cols + droped_chi2_cols
     # print(droped_cols)
     
-    final_num_cols = [col for col in numeric_cols if col not in droped_cols]
-    final_cat_cols = [col for col in cat_cols if col not in droped_cols]
+    numeric_cols = [col for col in numeric_cols if col not in droped_cols]
+    cat_cols = [col for col in cat_cols if col not in droped_cols]
     
     feature_selector = Pipeline(steps = [
         ("null_dropper", MultiColumnDropper(droped_cols))])
@@ -342,7 +342,7 @@ for month in dt_range:
     
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-        ('onehot', OneHotEncoder(handle_unknown='ignore'))])
+        ('onehot', OneHotEncoder(drop = 'first'))])
     
     preprocessor = ColumnTransformer(
         transformers=[
@@ -387,13 +387,14 @@ for month in dt_range:
     pp_cols = get_column_names_from_ColumnTransformer(pp)
     imp = grid_search_rf.best_estimator_['classifier'].feature_importances_
     index = np.argsort(imp)
-    index = np.concatenate(index[:-15], index[-15:])
+    index = np.concatenate((index[:15], index[-15:]))
     
     plt.title('Feature importances')
     plt.barh(range(len(index)), imp[index], color='b', align='center')
     plt.yticks(range(len(index)), [pp_cols[i] for i in index])
     plt.xlabel('Relative Importance')
-    plot = plt.show()
+    plt.figure(figsize = (12, 12))
+    plt.savefig('plt_' + str(month.date()))
     
     # roc_curve plot
     
