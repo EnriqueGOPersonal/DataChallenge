@@ -37,8 +37,6 @@ class MultiColumnDropper():
         If no columns specified, returns X
         columns in X.
         '''
-        print("argumento pasado a transformer")
-        print(self.columns)
         output = X.copy()
         if self.columns is not None:
             for col in self.columns:
@@ -54,11 +52,11 @@ class MultiColumnDropper():
     def fit_transform(self,X,y=None):
         return self.fit(X,y).transform(X)
 
-test = pd.read_csv(r"./data/Base1_test.csv")
 
 dateparse = lambda x: pd.datetime.strptime(x, '%d/%m/%Y')
 
 # Carga datos
+test = pd.read_csv(r"./data/Base1_test.csv", parse_dates = ["MES_COTIZACION"], date_parser = dateparse)
 base_1 = pd.read_csv(r"./data/Base1_train.csv", parse_dates = ["MES_COTIZACION"], date_parser = dateparse) # Base cotizaciones
 base_2 = pd.read_csv(r"./data/Base2.csv", sep = ";", parse_dates = ["MES_COTIZACION"], date_parser = dateparse) # Información sociodemográfica + digital
 base_3 = pd.read_csv(r"./data/Base3.csv", sep = ";", parse_dates = ["MES_COTIZACION", "MES_DATA"], date_parser = dateparse) # Base productos BBVA
@@ -133,6 +131,7 @@ def joinColumns(df1, df2):
     return df
 
 train = joinColumns(base_1, base_2)
+test = joinColumns(test, base_2)
 
 def joinColumns2(df1, df2):
 
@@ -152,6 +151,7 @@ def joinColumns2(df1, df2):
     return df
 
 train = joinColumns2(train, base_3)
+test = joinColumns2(test, base_3)
 
 def joinColumns3(df1, df2, agg_type = "num"):
     
@@ -199,9 +199,13 @@ def joinColumns3(df1, df2, agg_type = "num"):
     return df1
 
 train = joinColumns3(train, base_4, "num")
+test = joinColumns3(test, base_4, "num")
+
 train = joinColumns3(train, base_5, "num")
+test= joinColumns3(test, base_5, "num")
 
 train.MES_COTIZACION = train.MES_COTIZACION + pd.offsets.MonthBegin(0)
+test.MES_COTIZACION = test.MES_COTIZACION + pd.offsets.MonthBegin(0)
 
 # "---------------------------------------------------------"
 
@@ -256,8 +260,6 @@ for month in dt_range:
                     droped_corr_cols.append(colname)
                     corrmat = corrmat.drop(colname, axis = 1)
 
-    #-----------------------------------------
-    # codigo Uri
 
     # Graficando histogramas de columnas numéricas
     
@@ -292,13 +294,10 @@ for month in dt_range:
                 t_sel[t_ctr] = 1
             else:
                 droped_ttest_cols.append(col)
+                pass
         t_ctr += 1
         
     t_selec = pd.DataFrame(t_sel, index = train_num.columns)
-    
-    #-----------------------------------------
-    
-    # codigo Quique
     
     # ## Análisis Columnas categóricas
     
@@ -338,7 +337,7 @@ for month in dt_range:
     # Imputer categóricas con más frecuente
     numeric_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='median'))
-        # ('scaler', StandardScaler())
+        ('scaler', StandardScaler())
         ])
     
     categorical_transformer = Pipeline(steps=[
@@ -366,18 +365,26 @@ for month in dt_range:
     rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
                           ('classifier', RandomForestClassifier(n_jobs = -1))])    
     
-    grid_search = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring = "accuracy")
+    grid_search_lr = GridSearchCV(lr_clf, param_grid_lr, cv = 5, n_jobs = -1, scoring = "accuracy")
+    grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring = "accuracy")
     
     x_train = train_temp[[col for col in train_temp.columns if col != label]]
     y_train = train_temp[label]
 
-    grid_search.fit(x_train, y_train)
-
-
+    grid_search_rf.fit(x_train, y_train)
+    grid_search_lr.fit(x_train, y_train)
+    
+    grid_search_lr.predict(test)
+    
     #-----------------------------------------
     
-    # evaluator 
-    evaluation_df = pd.DataFrame(grid_search.cv_results_)
-    print(grid_search.best_score_)
+    # evaluator
+    evaluation_df_rf = pd.DataFrame(grid_search_rf.cv_results_)
+    evaluation_df_lr = pd.DataFrame(grid_search_lr.cv_results_)
+    
+    # CODIGO JULIO
+    # Feature importance plot
+    # grid_search.best_estimator_["classifier"]
+    
     # roc_curve plot
 
