@@ -168,16 +168,13 @@ def joinColumns3(df1, df2):
 
     nume = df.columns[(df.dtypes == "int64") | (df.dtypes == "float64")].to_list()
     nume = [col for col in nume if col not in train_columns]
-    # print("Columnas numéricas")
-    # print(nume)
+    print(df.columns)
     
     cate = df.columns[(df.dtypes == "category") | (df.dtypes == "object")].to_list()
     cate = [col for col in cate if col not in train_columns]
-    # print("Columnas categóricas")
-    # print(cate)
-    
-    df_num = df[["COD_CLIENTE"] + nume]
-    df_cate = df[["COD_CLIENTE"] + cate]
+
+    df_num = df[["MES_COTIZACION", "COD_CLIENTE"] + nume]
+    df_cate = df[["MES_COTIZACION", "COD_CLIENTE"] + cate]
     try:
         df_gr_m_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).mean()
         df1 = df1.merge(df_gr_m_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
@@ -187,12 +184,13 @@ def joinColumns3(df1, df2):
     
     try:
         for col in cate:
+            df_cate["counter"] = df_cate.loc[:, "COD_CLIENTE"]
             df_gr_c_cate = df_cate.groupby(["MES_COTIZACION", "COD_CLIENTE", col], as_index = False)\
-                .agg({"FLG_DESEMBOLSO": "count"})\
-                .pivot_table(index = ["COD_CLIENTE", "MES_COTIZACION"], columns = col)
+                .agg({"counter": "count"})\
+                .pivot_table(index = ["COD_CLIENTE", "MES_COTIZACION"], columns = col, aggfunc = np.sum)
             df_gr_c_cate.columns = df_gr_c_cate.columns.droplevel()
             df_gr_c_cate = df_gr_c_cate.reset_index()
-            df1 = df1.merge(df_gr_c_cate, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")        
+            df1 = df1.merge(df_gr_c_cate, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")    
     except Exception as e:
         print(e)
         pass
