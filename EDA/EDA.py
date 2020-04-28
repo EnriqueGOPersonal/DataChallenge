@@ -168,7 +168,6 @@ def joinColumns3(df1, df2):
 
     nume = df.columns[(df.dtypes == "int64") | (df.dtypes == "float64")].to_list()
     nume = [col for col in nume if col not in train_columns]
-    print(df.columns)
     
     cate = df.columns[(df.dtypes == "category") | (df.dtypes == "object")].to_list()
     cate = [col for col in cate if col not in train_columns]
@@ -224,6 +223,8 @@ numeric_cols = [col for col in numeric_cols if col not in label_cols]
 
 cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[1:].to_list()
 
+# "---------------------------------------------------------"
+
 dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(), freq = "1MS")
 
 test["PREDICCION"] = ["nan"] * len(test)
@@ -264,7 +265,6 @@ for month in dt_range:
                     #       "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
                     droped_corr_cols.append(colname)
                     corrmat = corrmat.drop(colname, axis = 1)
-
 
     # Graficando histogramas de columnas numéricas
     
