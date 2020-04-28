@@ -15,6 +15,29 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_selection import chi2
 from sklearn.impute import SimpleImputer
 
+class MultiColumnDropper():
+    def __init__(self,columns = None):
+        self.columns = columns # array of column names to encode
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self,X):
+        '''
+        Drops columns of X specified in self.columns 
+        If no columns specified, returns X
+        columns in X.
+        '''
+        output = X.copy()
+        if self.columns is not None:
+            output = output.drop(self.columns, axis = 1)
+        else:
+            pass
+        return output
+
+    def fit_transform(self,X,y=None):
+        return self.fit(X,y).transform(X)
+
 test = pd.read_csv(r"./data/Base1_test.csv")
 
 dateparse = lambda x: pd.to_datetime(x)
@@ -35,9 +58,11 @@ base_1 = base_1.groupby(['MES_COTIZACION', 'COD_CLIENTE', 'GARANTIA', 'IMPORTE',
        'PLAZO', 'TEA_MINIMA'], as_index = False).agg({"FLG_DESEMBOLSO": "max"})
 
 base_1 = base_1.sort_values(["MES_COTIZACION", "COD_CLIENTE"], ascending = False)\
-    .drop_duplicates(["COD_CLIENTE"], keep = "first")
+    .drop_duplicates(["MES_COTIZACION", "COD_CLIENTE"], keep = "first")
 
-base_1.FLG_DESEMBOLSO.value_counts()
+test = test.drop_duplicates(['MES_COTIZACION', 'COD_CLIENTE', 'GARANTIA', 'IMPORTE',
+       'PLAZO', 'TEA_MINIMA'])\
+    .drop_duplicates(["COD_CLIENTE", "MES_COTIZACION"])
 
 # Exploratory Data Analysis
 ## Base_1
@@ -72,6 +97,7 @@ base_2.COD_CLIENTE.isnull().sum()
 base_3.COD_CLIENTE.isnull().sum()
 base_4.COD_CLIENTE.isnull().sum()
 base_5.COD_CLIENTE.isnull().sum()
+
 
 # "---------------------------------------------------------"
 # "--------------------UNIENDO DATAFRAMES ------------------"
@@ -174,6 +200,7 @@ bool_cols = [
 
 numeric_cols = train.dtypes[train.dtypes == np.float64].index.to_list() +\
     train.dtypes[train.dtypes == np.int64].index.to_list()
+numeric_cols = [col for col in numeric_cols if col not in bool_cols]
 
 cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list()
 
@@ -187,11 +214,11 @@ for month in dt_range:
     
     # Análisis Columnas numéricas
 
-    for col in numeric_cols:
+    for col in (cat_cols + numeric_cols + bool_cols):
         if train_temp[col].isna().sum()/len(train_temp[col]) > 0.40:
             print(str(train_temp[col].isna().sum()/len(train_temp[col])), col)
-            train_temp = train_temp.drop(col, axis = 1)
 
+    null_dropper = MultiColumnDropper(droped_corr_cols)
     
     # Eliminando una de cada dos columnas numéricas correlacionadas (Para facilitar análisis)
     
@@ -210,7 +237,8 @@ for month in dt_range:
                           "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
                     droped_corr_cols.append(colname)
                     corrmat = corrmat.drop(colname, axis = 1)
-    train_temp = train_temp.drop(droped_corr_cols, axis = 1)
+    
+    corr_dropper = MultiColumnDropper(droped_corr_cols)
     
     #-----------------------------------------
     # codigo Uri
@@ -235,12 +263,12 @@ for month in dt_range:
     #     plt.show()
     #-----------------------------------------
     
-    # codigo quique
+    # codigo Quique
     
     imp_cats = SimpleImputer(strategy="most_frequent")
     # Imputer numericas con mediana
-    imp_nums.fit()
-    
+    imp_nums = SimpleImputer(strategy="median")
+    # imp_nums.fit_transform()
     
     # Chi Cuadrada
     
@@ -253,10 +281,10 @@ for month in dt_range:
     X = df.drop(label, axis = 1)
     y = df[label]
     chi_scores = chi2(X,y)
-    p_values = pd.Series(chi_scores[1],index = X.columns)
+    p_values = pd.Series(chi_scores[1], index = X.columns)
     p_values.sort_values(ascending = False , inplace = True)
     p_values.plot.bar()
-
+    
     #-----------------------------------------
     # Codigo Julio
     
