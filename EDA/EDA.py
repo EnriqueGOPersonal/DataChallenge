@@ -176,8 +176,12 @@ def joinColumns3(df1, df2):
     df_num = df[["MES_COTIZACION", "COD_CLIENTE"] + nume]
     df_cate = df[["MES_COTIZACION", "COD_CLIENTE"] + cate]
     try:
-        df_gr_m_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).mean()
-        df1 = df1.merge(df_gr_m_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
+        df_gr_avg_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).mean()
+        df1 = df1.merge(df_gr_avg_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
+        df_gr_max_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).max()
+        df1 = df1.merge(df_gr_max_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
+        df_gr_min_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).min()
+        df1 = df1.merge(df_gr_min_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
     except Exception as e:
         print(e)
         pass
@@ -189,6 +193,7 @@ def joinColumns3(df1, df2):
                 .agg({"counter": "count"})\
                 .pivot_table(index = ["COD_CLIENTE", "MES_COTIZACION"], columns = col, aggfunc = np.sum)
             df_gr_c_cate.columns = df_gr_c_cate.columns.droplevel()
+            df_gr_c_cate.columns = [(col + "_" + str(c) + "_cnt") for c in df_gr_c_cate.columns]
             df_gr_c_cate = df_gr_c_cate.reset_index()
             df1 = df1.merge(df_gr_c_cate, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")    
     except Exception as e:
