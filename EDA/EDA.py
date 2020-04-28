@@ -23,7 +23,6 @@ from scipy.stats import normaltest
 from scipy.stats import ttest_ind
 from sklearn.pipeline import Pipeline
 
-
 class MultiColumnDropper():
     def __init__(self,columns = None):
         self.columns = columns # array of column names to encode
@@ -222,12 +221,13 @@ cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].in
 
 dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(), freq = "1MS")
 
-
-
+test["PREDICCION"] = ["nan"] * len(test)
+test["MES_COTIZACION"] = test["MES_COTIZACION"].dt.date
 for month in dt_range:
     print(month)
     stages = []
     train_temp = train[train.MES_COTIZACION <= month]
+    test_temp  = test[test.MES_COTIZACION == month]
 
     # Feature Selection 
     
@@ -337,7 +337,7 @@ for month in dt_range:
     # Imputer categóricas con más frecuente
     numeric_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='median'))
-        ('scaler', StandardScaler())
+        # ('scaler', StandardScaler())
         ])
     
     categorical_transformer = Pipeline(steps=[
@@ -374,7 +374,10 @@ for month in dt_range:
     grid_search_rf.fit(x_train, y_train)
     grid_search_lr.fit(x_train, y_train)
     
-    grid_search_lr.predict(test)
+    test_temp = test_temp.drop(["COD_SOL", "PREDICCION"], axis = 1)
+    
+    mask = test["MES_COTIZACION"] == month
+    test.loc[mask, "PREDICCION"] = grid_search_lr.predict(test_temp)
     
     #-----------------------------------------
     
