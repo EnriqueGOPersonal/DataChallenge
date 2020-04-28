@@ -218,7 +218,7 @@ numeric_cols = train.dtypes[train.dtypes == np.float64].index.to_list() +\
     train.dtypes[train.dtypes == np.int64].index.to_list()
 numeric_cols = [col for col in numeric_cols if col not in label_cols]
 
-cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list()
+cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[1:].to_list()
 
 dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(), freq = "1MS")
 
@@ -336,7 +336,7 @@ for month in dt_range:
     
     # Imputer categóricas con más frecuente
     numeric_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='median'))
+        ('imputer', SimpleImputer(strategy='median')), 
         ('scaler', StandardScaler())
         ])
     
@@ -383,8 +383,36 @@ for month in dt_range:
     evaluation_df_lr = pd.DataFrame(grid_search_lr.cv_results_)
     
     # CODIGO JULIO
-    # Feature importance plot
-    # grid_search.best_estimator_["classifier"]
+    pp = grid_search_rf.best_estimator_['preprocessor']
+    pp_cols = get_column_names_from_ColumnTransformer(pp)
+    imp = grid_search_rf.best_estimator_['classifier'].feature_importances_
+    index = np.argsort(imp)
+    index = np.concatenate(index[:-15], index[-15:])
+    
+    plt.title('Feature importances')
+    plt.barh(range(len(index)), imp[index], color='b', align='center')
+    plt.yticks(range(len(index)), [pp_cols[i] for i in index])
+    plt.xlabel('Relative Importance')
+    plot = plt.show()
     
     # roc_curve plot
-
+    
+def get_column_names_from_ColumnTransformer(column_transformer):    
+    col_name = []
+    for transformer_in_columns in column_transformer.transformers_[:-1]:#the last transformer is ColumnTransformer's 'remainder'
+        raw_col_name = transformer_in_columns[2]
+        if isinstance(transformer_in_columns[1],Pipeline): 
+            transformer = transformer_in_columns[1].steps[-1][1]
+        else:
+            transformer = transformer_in_columns[1]
+        try:
+            names = transformer.get_feature_names()
+        except AttributeError: # if no 'get_feature_names' function, use raw column name
+            names = raw_col_name
+        if isinstance(names,np.ndarray): # eg.
+            col_name += names.tolist()
+        elif isinstance(names,list):
+            col_name += names    
+        elif isinstance(names,str):
+            col_name.append(names)
+    return col_name
