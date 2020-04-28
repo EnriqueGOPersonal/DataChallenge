@@ -23,7 +23,6 @@ from scipy.stats import normaltest
 from scipy.stats import ttest_ind
 from sklearn.pipeline import Pipeline
 
-
 class MultiColumnDropper():
     def __init__(self,columns = None):
         self.columns = columns # array of column names to encode
@@ -125,7 +124,7 @@ def joinColumns(df1, df2):
     df = df.loc[(df["MES_COTIZACION_y"] <= df["MES_COTIZACION_x"]) |
                 (df["MES_COTIZACION_y"].isnull()), :]
     df = df.sort_values("MES_COTIZACION_y", ascending = False)
-    df = df.drop_duplicates(["COD_CLIENTE"], keep = "first")
+    df = df.drop_duplicates(["COD_CLIENTE", "MES_COTIZACION_x"], keep = "first")
     df = df.drop("MES_COTIZACION_y", axis = 1)
     df = df.rename(columns = {"MES_COTIZACION_x": "MES_COTIZACION"})
     return df
@@ -144,7 +143,7 @@ def joinColumns2(df1, df2):
     # print(dfz.dtypes)
     df = pd.concat([dfx, dfy, dfz], sort = False).drop("_merge", axis = 1)
     df = df.sort_values("MES_DATA", ascending = False)    
-    df = df.drop_duplicates(["COD_CLIENTE"], keep = "first")
+    df = df.drop_duplicates(["MES_COTIZACION_x", "COD_CLIENTE"], keep = "first")
     df = df.drop("MES_COTIZACION_y", axis = 1)
     df = df.rename(columns = {"MES_COTIZACION_x": "MES_COTIZACION"})
 
@@ -153,7 +152,7 @@ def joinColumns2(df1, df2):
 train = joinColumns2(train, base_3)
 test = joinColumns2(test, base_3)
 
-def joinColumns3(df1, df2, agg_type = "num"):
+def joinColumns3(df1, df2):
     
     train_columns = df1.columns.to_list()
     
@@ -180,29 +179,31 @@ def joinColumns3(df1, df2, agg_type = "num"):
     df_num = df[["COD_CLIENTE"] + nume]
     df_cate = df[["COD_CLIENTE"] + cate]
     try:
-        df_gr_m_num = df_num.groupby("COD_CLIENTE", as_index = False).mean()
-        if agg_type == "num":
-            df1 = df1.merge(df_gr_m_num, on = "COD_CLIENTE", how = "left")
+        df_gr_m_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).mean()
+        df1 = df1.merge(df_gr_m_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
     except Exception as e:
         print(e)
         pass
     
-    try: 
-        df_gr_c_cate = df_cate.groupby("COD_CLIENTE", as_index = False).count()
-        if agg_type == "cat":
-            df1 = df1.merge(df_gr_c_cate, on = "COD_CLIENTE", how = "left")
-        
+    try:
+        for col in cate:
+            df_gr_c_cate = df_cate.groupby(["MES_COTIZACION", "COD_CLIENTE", col], as_index = False)\
+                .agg({"FLG_DESEMBOLSO": "count"})\
+                .pivot_table(index = ["COD_CLIENTE", "MES_COTIZACION"], columns = col)
+            df_gr_c_cate.columns = df_gr_c_cate.columns.droplevel()
+            df_gr_c_cate = df_gr_c_cate.reset_index()
+            df1 = df1.merge(df_gr_c_cate, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")        
     except Exception as e:
         print(e)
         pass
     
     return df1
 
-train = joinColumns3(train, base_4, "num")
-test = joinColumns3(test, base_4, "num")
+train = joinColumns3(train, base_4)
+test = joinColumns3(test, base_4)
 
-train = joinColumns3(train, base_5, "num")
-test= joinColumns3(test, base_5, "num")
+train = joinColumns3(train, base_5)
+test= joinColumns3(test, base_5)
 
 train.MES_COTIZACION = train.MES_COTIZACION + pd.offsets.MonthBegin(0)
 test.MES_COTIZACION = test.MES_COTIZACION + pd.offsets.MonthBegin(0)
@@ -222,12 +223,13 @@ cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].in
 
 dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(), freq = "1MS")
 
-
-
-for month in dt_range[:2]:
+test["PREDICCION"] = ["nan"] * len(test)
+test["MES_COTIZACION"] = test["MES_COTIZACION"].dt.date
+for month in dt_range:
     print(month)
     stages = []
     train_temp = train[train.MES_COTIZACION <= month]
+    test_temp  = test[test.MES_COTIZACION == month]
 
     # Feature Selection 
     
@@ -319,7 +321,7 @@ for month in dt_range[:2]:
     y = df[label]
     chi_scores = chi2(X,y)
     p_values = pd.Series(chi_scores[1], index = X.columns)
-    droped_chi2_cols = p_values[p_values > 0.05].to_list()
+    droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
 
     p_values.sort_values(ascending = False , inplace = True)
     p_values.plot.bar()
@@ -336,10 +338,10 @@ for month in dt_range[:2]:
     
     # Imputer categóricas con más frecuente
     numeric_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='median')), 
+        ('imputer', SimpleImputer(strategy='median')),
         ('scaler', StandardScaler())
         ])
-    
+
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
         ('onehot', OneHotEncoder(drop = 'first'))])
@@ -347,8 +349,8 @@ for month in dt_range[:2]:
     preprocessor = ColumnTransformer(
         transformers=[
             ("feature_select", feature_selector, droped_cols),
-            ('num', numeric_transformer, numeric_cols),
-            ("cat", categorical_transformer, cat_cols)])
+            ("cat", categorical_transformer, final_cat_cols),
+            ('num', numeric_transformer, final_num_cols)])
         
     param_grid_lr = {
         'classifier__C': [0.1, 1.0, 10, 100],
@@ -374,14 +376,18 @@ for month in dt_range[:2]:
     grid_search_rf.fit(x_train, y_train)
     grid_search_lr.fit(x_train, y_train)
     
-    grid_search_lr.predict(test)
+    test_temp = test_temp.drop(["COD_SOL", "PREDICCION"], axis = 1)
+    
+    mask = test["MES_COTIZACION"] == month
+    test.loc[mask, "PREDICCION"] = grid_search_lr.predict(test_temp)
     
     #-----------------------------------------
     
     # evaluator
     evaluation_df_rf = pd.DataFrame(grid_search_rf.cv_results_)
     evaluation_df_lr = pd.DataFrame(grid_search_lr.cv_results_)
-    
+    print(grid_search_rf.best_score_)
+    print(grid_search_lr.best_score_)
     # CODIGO JULIO
     pp = grid_search_rf.best_estimator_['preprocessor']
     pp_cols = get_column_names_from_ColumnTransformer(pp)
