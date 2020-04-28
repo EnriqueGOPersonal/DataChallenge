@@ -14,6 +14,8 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_selection import chi2
 from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
 class MultiColumnDropper():
     def __init__(self,columns = None):
@@ -212,15 +214,18 @@ for month in dt_range:
     print(month)
     train_temp = train[train.MES_COTIZACION <= month]
     
-    # Análisis Columnas numéricas
-
-    for col in (cat_cols + numeric_cols + bool_cols):
-        if train_temp[col].isna().sum()/len(train_temp[col]) > 0.40:
-            print(str(train_temp[col].isna().sum()/len(train_temp[col])), col)
-
-    null_dropper = MultiColumnDropper(droped_corr_cols)
+    # Feature Selection 
     
-    # Eliminando una de cada dos columnas numéricas correlacionadas (Para facilitar análisis)
+    # Dropping Null Columns
+    
+    droped_null_cols = []
+    for col in (cat_cols + numeric_cols + bool_cols):
+        if train_temp[col].isna().sum()/len(train_temp[col]) > 0.80:
+            print(str(train_temp[col].isna().sum()/len(train_temp[col])), col)
+            droped_null_cols.append(col)
+    null_dropper = MultiColumnDropper(droped_null_cols)
+    
+    # Eliminando una de cada dos columnas numéricas correlacionadas por ser redundantes
     
     corrmat = train_temp[numeric_cols].corr()
     droped_corr_cols = []
@@ -232,9 +237,9 @@ for month in dt_range:
                 if colname in droped_corr_cols:
                     pass
                 else:
-                    print(colname + " se correlaciona mucho con " + col +
-                          "con un PCC de " + str(corrmat.loc[colname, col]) + 
-                          "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
+                    # print(colname + " se correlaciona mucho con " + col +
+                    #       "con un PCC de " + str(corrmat.loc[colname, col]) + 
+                    #       "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
                     droped_corr_cols.append(colname)
                     corrmat = corrmat.drop(colname, axis = 1)
     
@@ -265,15 +270,10 @@ for month in dt_range:
     
     # codigo Quique
     
-    imp_cats = SimpleImputer(strategy="most_frequent")
-    # Imputer numericas con mediana
-    imp_nums = SimpleImputer(strategy="median")
-    # imp_nums.fit_transform()
-    
     # Chi Cuadrada
     
-    df = train[cat_cols + [label]].copy()
-    for col in cat_cols:
+    df = train[cat_cols + bool_cols + [label]].copy()
+    for col in df.columns:
         df.loc[df[col].isnull(), col] = "NaN"
         label_encoder = LabelEncoder()
         df[col] = label_encoder.fit_transform(df[col])
@@ -282,8 +282,19 @@ for month in dt_range:
     y = df[label]
     chi_scores = chi2(X,y)
     p_values = pd.Series(chi_scores[1], index = X.columns)
-    p_values.sort_values(ascending = False , inplace = True)
-    p_values.plot.bar()
+    
+    droped_chi2_cols = p_values[p_values > 0.05].values
+    chi2_dropper = MultiColumnDropper(droped_chi2_cols)
+    
+    # p_values.sort_values(ascending = False , inplace = True)
+    # p_values.plot.bar()
+    
+    # Imputer categóricas con más frecuente
+    imp_cats = SimpleImputer(strategy="most_frequent")
+    # Imputer numericas con mediana
+    imp_nums = SimpleImputer(strategy="median")
+
+    imp_cats.fit_transform(train_temp)
     
     #-----------------------------------------
     # Codigo Julio
