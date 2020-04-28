@@ -16,6 +16,10 @@ from sklearn.feature_selection import chi2
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from scipy.stats import shapiro
+from scipy.stats import normaltest
+from scipy.stats import ttest_ind
+
 
 class MultiColumnDropper():
     def __init__(self,columns = None):
@@ -214,6 +218,7 @@ for month in dt_range:
     print(month)
     train_temp = train[train.MES_COTIZACION <= month]
     
+
     # Feature Selection 
     
     # Dropping Null Columns
@@ -224,10 +229,18 @@ for month in dt_range:
             print(str(train_temp[col].isna().sum()/len(train_temp[col])), col)
             droped_null_cols.append(col)
     null_dropper = MultiColumnDropper(droped_null_cols)
+
+    # Análisis Columnas numéricas
+    train_num = train_temp[numeric_cols]
+
+    for col in numeric_cols:
+        if train_num[col].isna().sum()/len(train_num[col]) > 0.40:
+            print(str(train_num[col].isna().sum()/len(train_num[col])), col)
+            train_num = train_num.drop(col, axis = 1)
     
     # Eliminando una de cada dos columnas numéricas correlacionadas por ser redundantes
     
-    corrmat = train_temp[numeric_cols].corr()
+    corrmat = train_num.corr()
     droped_corr_cols = []
     
     for col in corrmat.columns:
@@ -249,15 +262,41 @@ for month in dt_range:
     # codigo Uri
     # Graficando histogramas de columnas numéricas
     
-    # for col in numeric_cols:
-    #     train[col].plot.hist(title = col)
-    #     s = train.describe()[col].to_string() + \
-    #         "\nMissing Values: " + str(train.isnull().sum()[col]) + \
-    #         "\nMissing Values %: " + str(round(train.isnull().sum()[col]/len(train),4))
-    #     plt.figtext(1, 0.5, s)
-    #     plt.show()
+    for col in train_num.columns:
+         train_num[col].plot.hist(title = col)
+         s = train_num.describe()[col].to_string() + \
+             "\nMissing Values: " + str(train_num.isnull().sum()[col]) + \
+             "\nMissing Values %: " + str(round(train_num.isnull().sum()[col]/len(train_num),4))
+         plt.figtext(1, 0.5, s)
+         plt.show()
+         
     # * Evaluar normalidad "skewness"
-
+    target = train_num.pop("FLG_DESEMBOLSO")
+    t_sel = [0] * len(train_num.columns) # señala qué variables pueden ayudar a predecir target
+    t_ctr = 0 # contador
+    for col in train_num.columns:
+        # Shapiro-Wilk test
+        stat, p = shapiro(train_num[col])
+        #print('Statistics={:.3f}, p={:.3f}'.format(stat, p))
+        
+        if p > 0.05: # no se rechaza la H0 según la cual la distribución de estos datos es similar a la gaussiana
+            # t-test
+            print(col)
+            # separación de datos según la aceptación del crédito
+            t0 = train_num[col][target == 0]
+            t1 = train_num[col][target == 1]
+            stat, p = ttest_ind(t0, t1, nan_policy = "omit", equal_var = False)
+            print('T-statistic={:.3f}, p={:.3f}'.format(stat, p))
+            
+            if p < 0.05: # se rechaza la H0 según la cual las medias de t0 y t1 no difieren significativamente
+                t_sel[t_ctr] = 1
+            else:
+                droped_corr_cols.append(col)
+        t_ctr += 1
+        
+    t_selec = pd.DataFrame(t_sel, index = train_num.columns)
+    train_temp = train_temp.drop(droped_corr_cols, axis = 1)
+    
     # ## Análisis Columnas categóricas
     
     # for col in cat_cols:
