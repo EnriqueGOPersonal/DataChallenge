@@ -248,10 +248,13 @@ for month in dt_range:
             
             if p < 0.05: # se rechaza la H0 según la cual las medias de t0 y t1 no difieren significativamente
                 t_sel[t_ctr] = 1
+            else:
+                droped_corr_cols.append(col)
         t_ctr += 1
         
     t_selec = pd.DataFrame(t_sel, index = train_num.columns)
-
+    train_temp = train_temp.drop(droped_corr_cols, axis = 1)
+    
     # ## Análisis Columnas categóricas
     
     # for col in cat_cols:
