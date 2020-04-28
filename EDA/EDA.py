@@ -51,6 +51,25 @@ class MultiColumnDropper():
     def fit_transform(self,X,y=None):
         return self.fit(X,y).transform(X)
 
+def get_column_names_from_ColumnTransformer(column_transformer):    
+    col_name = []
+    for transformer_in_columns in column_transformer.transformers_[:-1]:#the last transformer is ColumnTransformer's 'remainder'
+        raw_col_name = transformer_in_columns[2]
+        if isinstance(transformer_in_columns[1],Pipeline): 
+            transformer = transformer_in_columns[1].steps[-1][1]
+        else:
+            transformer = transformer_in_columns[1]
+        try:
+            names = transformer.get_feature_names()
+        except AttributeError: # if no 'get_feature_names' function, use raw column name
+            names = raw_col_name
+        if isinstance(names,np.ndarray): # eg.
+            col_name += names.tolist()
+        elif isinstance(names,list):
+            col_name += names    
+        elif isinstance(names,str):
+            col_name.append(names)
+    return col_name
 
 dateparse = lambda x: pd.datetime.strptime(x, '%d/%m/%Y')
 
@@ -234,6 +253,13 @@ for month in dt_range:
     stages = []
     train_temp = train[train.MES_COTIZACION <= month]
     test_temp  = test[test.MES_COTIZACION == month]
+    
+    
+    # Dejar una observación por cliente-mes
+    train_temp = train_temp.sort_values("MES_COTIZACION", ascending = False)\
+        .drop_duplicates(['COD_CLIENTE'], keep = "first")
+    test_temp = test_temp.sort_values("MES_COTIZACION", ascending = False)\
+        .drop_duplicates(['COD_CLIENTE'], keep = "first")
 
     # Feature Selection 
     
@@ -407,22 +433,4 @@ for month in dt_range:
     
     # roc_curve plot
     
-def get_column_names_from_ColumnTransformer(column_transformer):    
-    col_name = []
-    for transformer_in_columns in column_transformer.transformers_[:-1]:#the last transformer is ColumnTransformer's 'remainder'
-        raw_col_name = transformer_in_columns[2]
-        if isinstance(transformer_in_columns[1],Pipeline): 
-            transformer = transformer_in_columns[1].steps[-1][1]
-        else:
-            transformer = transformer_in_columns[1]
-        try:
-            names = transformer.get_feature_names()
-        except AttributeError: # if no 'get_feature_names' function, use raw column name
-            names = raw_col_name
-        if isinstance(names,np.ndarray): # eg.
-            col_name += names.tolist()
-        elif isinstance(names,list):
-            col_name += names    
-        elif isinstance(names,str):
-            col_name.append(names)
-    return col_name
+
