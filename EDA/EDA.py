@@ -11,14 +11,17 @@ import matplotlib.pyplot as plt
 import os 
 import sys
 import seaborn as sns
-from sklearn.preprocessing import LabelEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from sklearn.feature_selection import chi2
 from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import shapiro
 from scipy.stats import normaltest
 from scipy.stats import ttest_ind
+from sklearn.pipeline import Pipeline
 
 
 class MultiColumnDropper():
@@ -36,7 +39,11 @@ class MultiColumnDropper():
         '''
         output = X.copy()
         if self.columns is not None:
-            output = output.drop(self.columns, axis = 1)
+            for col in self.columns:
+                try:
+                    output = output.drop(col, axis = 1)
+                except:
+                    pass
         else:
             pass
         return output
@@ -46,7 +53,7 @@ class MultiColumnDropper():
 
 test = pd.read_csv(r"./data/Base1_test.csv")
 
-dateparse = lambda x: pd.to_datetime(x)
+dateparse = lambda x: pd.datetime.strptime(x, '%d/%m/%Y')
 
 # Carga datos
 base_1 = pd.read_csv(r"./data/Base1_train.csv", parse_dates = ["MES_COTIZACION"], date_parser = dateparse) # Base cotizaciones
@@ -54,6 +61,9 @@ base_2 = pd.read_csv(r"./data/Base2.csv", sep = ";", parse_dates = ["MES_COTIZAC
 base_3 = pd.read_csv(r"./data/Base3.csv", sep = ";", parse_dates = ["MES_COTIZACION", "MES_DATA"], date_parser = dateparse) # Base productos BBVA
 base_4 = pd.read_csv(r"./data/Base4.csv", sep = ";", parse_dates = ["MES_COTIZACION", "MES_DATA"], date_parser = dateparse) # Base de saldos en el Sistema Financiero
 base_5 = pd.read_csv(r"./data/Base5.csv", sep = ";", parse_dates = ["MES_COTIZACION", "MES_DATA"], date_parser = dateparse) # Base de consumos con tarjeta
+
+for col in ["USO_BI_M0", "USO_BI_M1", "USO_BI_M2", "USO_BM_M0", "USO_BM_M1", "USO_BM_M2"]:
+    base_2[col] = base_2[col].astype(str)
 
 base_4["ST_CREDITO"] = base_4["ST_CREDITO"].astype(str)
 base_5[["CD_DIVISA", "TP_TARJETA"]] = base_5[["CD_DIVISA", "TP_TARJETA"]].astype(str)
@@ -195,20 +205,14 @@ train.MES_COTIZACION = train.MES_COTIZACION + pd.offsets.MonthBegin(0)
 # Dividiendo columnas por tipo
 
 bool_cols = [
-"FLG_DESEMBOLSO",
-"USO_BI_M0",
-"USO_BI_M1",
-"USO_BI_M2",
-"USO_BM_M0",
-"USO_BM_M1",
-"USO_BM_M2"
+"FLG_DESEMBOLSO"
 ]
 
 numeric_cols = train.dtypes[train.dtypes == np.float64].index.to_list() +\
     train.dtypes[train.dtypes == np.int64].index.to_list()
 numeric_cols = [col for col in numeric_cols if col not in bool_cols]
 
-cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list()
+cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].index[2:].to_list() + bool_cols
 
 dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(), freq = "1MS")
 
@@ -216,28 +220,23 @@ label = 'FLG_DESEMBOLSO'
 
 for month in dt_range:
     print(month)
+    stages = []
     train_temp = train[train.MES_COTIZACION <= month]
-    
+    print(len(train_temp))
 
     # Feature Selection 
     
     # Dropping Null Columns
     
     droped_null_cols = []
-    for col in (cat_cols + numeric_cols + bool_cols):
-        if train_temp[col].isna().sum()/len(train_temp[col]) > 0.80:
+    for col in (cat_cols + numeric_cols):
+        if train_temp[col].isna().sum()/len(train_temp[col]) > 0.40:
             print(str(train_temp[col].isna().sum()/len(train_temp[col])), col)
             droped_null_cols.append(col)
-    null_dropper = MultiColumnDropper(droped_null_cols)
 
     # Análisis Columnas numéricas
     train_num = train_temp[numeric_cols]
 
-    for col in numeric_cols:
-        if train_num[col].isna().sum()/len(train_num[col]) > 0.40:
-            print(str(train_num[col].isna().sum()/len(train_num[col])), col)
-            train_num = train_num.drop(col, axis = 1)
-    
     # Eliminando una de cada dos columnas numéricas correlacionadas por ser redundantes
     
     corrmat = train_num.corr()
@@ -255,23 +254,23 @@ for month in dt_range:
                     #       "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
                     droped_corr_cols.append(colname)
                     corrmat = corrmat.drop(colname, axis = 1)
-    
-    corr_dropper = MultiColumnDropper(droped_corr_cols)
-    
+
     #-----------------------------------------
     # codigo Uri
+
     # Graficando histogramas de columnas numéricas
     
-    for col in train_num.columns:
-         train_num[col].plot.hist(title = col)
-         s = train_num.describe()[col].to_string() + \
-             "\nMissing Values: " + str(train_num.isnull().sum()[col]) + \
-             "\nMissing Values %: " + str(round(train_num.isnull().sum()[col]/len(train_num),4))
-         plt.figtext(1, 0.5, s)
-         plt.show()
-         
+    # for col in train_num.columns:
+    #      train_num[col].plot.hist(title = col)
+    #      s = train_num.describe()[col].to_string() + \
+    #          "\nMissing Values: " + str(train_num.isnull().sum()[col]) + \
+    #          "\nMissing Values %: " + str(round(train_num.isnull().sum()[col]/len(train_num),4))
+    #      plt.figtext(1, 0.5, s)
+    #      plt.show()
+
+    droped_ttest_cols = []         
     # * Evaluar normalidad "skewness"
-    target = train_num.pop("FLG_DESEMBOLSO")
+    target = train_temp[label]
     t_sel = [0] * len(train_num.columns) # señala qué variables pueden ayudar a predecir target
     t_ctr = 0 # contador
     for col in train_num.columns:
@@ -281,21 +280,24 @@ for month in dt_range:
         
         if p > 0.05: # no se rechaza la H0 según la cual la distribución de estos datos es similar a la gaussiana
             # t-test
-            print(col)
+            # print(col)
             # separación de datos según la aceptación del crédito
             t0 = train_num[col][target == 0]
             t1 = train_num[col][target == 1]
             stat, p = ttest_ind(t0, t1, nan_policy = "omit", equal_var = False)
-            print('T-statistic={:.3f}, p={:.3f}'.format(stat, p))
+            # print('T-statistic={:.3f}, p={:.3f}'.format(stat, p))
             
             if p < 0.05: # se rechaza la H0 según la cual las medias de t0 y t1 no difieren significativamente
                 t_sel[t_ctr] = 1
             else:
-                droped_corr_cols.append(col)
+                droped_ttest_cols.append(col)
         t_ctr += 1
         
     t_selec = pd.DataFrame(t_sel, index = train_num.columns)
-    train_temp = train_temp.drop(droped_corr_cols, axis = 1)
+    
+    #-----------------------------------------
+    
+    # codigo Quique
     
     # ## Análisis Columnas categóricas
     
@@ -305,35 +307,60 @@ for month in dt_range:
     #         "\nMissing Values %: " + str(round(train.isnull().sum()[col]/len(train),4))
     #     plt.figtext(1, 0.5, s)
     #     plt.show()
-    #-----------------------------------------
     
-    # codigo Quique
+    # Feature Selection con Chi Cuadrada
     
-    # Chi Cuadrada
-    
-    df = train[cat_cols + bool_cols + [label]].copy()
-    for col in df.columns:
+    df = train[cat_cols].copy()
+    for col in cat_cols:
         df.loc[df[col].isnull(), col] = "NaN"
-        label_encoder = LabelEncoder()
-        df[col] = label_encoder.fit_transform(df[col])
+        df[col] = LabelEncoder().fit_transform(df[col])
     
-    X = df.drop(label, axis = 1)
+    X = df.drop([label], axis = 1)
     y = df[label]
     chi_scores = chi2(X,y)
     p_values = pd.Series(chi_scores[1], index = X.columns)
-    
     droped_chi2_cols = p_values[p_values > 0.05].values
-    chi2_dropper = MultiColumnDropper(droped_chi2_cols)
-    
-    # p_values.sort_values(ascending = False , inplace = True)
-    # p_values.plot.bar()
+
+    p_values.sort_values(ascending = False , inplace = True)
+    p_values.plot.bar()
+    plt.show()
+
+    feature_selector = Pipeline(steps = [
+        ("null_dropper", MultiColumnDropper(droped_null_cols)),
+        ("corr_dropper", MultiColumnDropper(droped_corr_cols)),
+        ("ttest_dropper", MultiColumnDropper(droped_ttest_cols)),
+        ("chi2_dropper", MultiColumnDropper(droped_chi2_cols))])
     
     # Imputer categóricas con más frecuente
-    imp_cats = SimpleImputer(strategy="most_frequent")
-    # Imputer numericas con mediana
-    imp_nums = SimpleImputer(strategy="median")
+    numeric_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler())])
+    
+    categorical_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))])
+    
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("feature_select", feature_selector),
+            ('num', numeric_transformer, numeric_cols),
+            ('cat', categorical_transformer, cat_cols)])
 
-    imp_cats.fit_transform(train_temp)
+    param_grid_lr = {
+        'classifier__C': [0.1, 1.0, 10, 100],
+    }
+
+    param_grid_rf = {
+        'classifier__num_trees': [30, 40, 50],
+        'classifier__depth': [25, 30, 27]
+    }
+
+
+    clf = Pipeline(steps=[('preprocessor', preprocessor),
+                          ('classifier', LogisticRegression())])    
+    
+    grid_search = GridSearchCV(clf, param_grid_lr, cv = 4)
+    grid_search.fit(X_train, y_train)
     
     #-----------------------------------------
     # Codigo Julio
