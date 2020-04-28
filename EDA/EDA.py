@@ -333,8 +333,9 @@ for month in dt_range:
     
     # Imputer categóricas con más frecuente
     numeric_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='median')),
-        ('scaler', StandardScaler())])
+        ('imputer', SimpleImputer(strategy='median'))
+        # ('scaler', StandardScaler())
+        ])
     
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
@@ -351,15 +352,21 @@ for month in dt_range:
     }
 
     param_grid_rf = {
-        'classifier__num_trees': [30, 40, 50],
-        'classifier__depth': [25, 30, 27]
+        'classifier__n_estimators': [30, 40, 50],
+        'classifier__depth': [25, 30, 35]
     }
 
-
-    clf = Pipeline(steps=[('preprocessor', preprocessor),
+    lr_clf = Pipeline(steps=[('preprocessor', preprocessor),
                           ('classifier', LogisticRegression())])    
     
-    grid_search = GridSearchCV(clf, param_grid_lr, cv = 4)
+
+    rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
+                          ('classifier', RandomForestClassifier(n_jobs = -1))])    
+    
+    grid_search = GridSearchCV(rf_clf, param_grid_lr, cv = 4, n_jobs = -1, scoring = "neg_log_loss")
+    
+    X_train = train_temp[[col for col in train_temp.columns if col != label]]
+    y_train = train_temp[label]
     grid_search.fit(X_train, y_train)
     
     #-----------------------------------------
@@ -374,6 +381,7 @@ for month in dt_range:
     #-----------------------------------------
         
     # evaluator 
+    evaluation_df = pd.DataFrame(grid_search.cv_results_)
     # roc_curve plot
     # 
 
