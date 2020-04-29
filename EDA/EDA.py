@@ -210,6 +210,7 @@ def joinColumns3(df1, df2):
             df_gr_c_cate = df_cate.groupby(["MES_COTIZACION", "COD_CLIENTE", col], as_index = False)\
                 .agg({"counter": "count"})\
                 .pivot_table(index = ["COD_CLIENTE", "MES_COTIZACION"], columns = col, aggfunc = np.sum)
+            df_gr_c_cate = df_gr_c_cate.fillna(0)
             df_gr_c_cate.columns = df_gr_c_cate.columns.droplevel()
             df_gr_c_cate.columns = [(col + "_" + str(c) + "_cnt") for c in df_gr_c_cate.columns]
             df_gr_c_cate = df_gr_c_cate.reset_index()
@@ -246,8 +247,6 @@ cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].in
 
 dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(), freq = "1MS")
 
-test["PREDICCION"] = ["nan"] * len(test)
-test["MES_COTIZACION"] = test["MES_COTIZACION"].dt.date
 for month in dt_range:
     print(month)
     stages = []
@@ -359,8 +358,8 @@ for month in dt_range:
     droped_cols = droped_null_cols + droped_corr_cols + droped_ttest_cols + droped_chi2_cols
     # print(droped_cols)
     
-    numeric_cols = [col for col in numeric_cols if col not in droped_cols]
-    cat_cols = [col for col in cat_cols if col not in droped_cols]
+    final_num_cols = [col for col in numeric_cols if col not in droped_cols]
+    final_cat_cols = [col for col in cat_cols if col not in droped_cols]
     
     feature_selector = Pipeline(steps = [
         ("null_dropper", MultiColumnDropper(droped_cols))])
@@ -373,16 +372,18 @@ for month in dt_range:
 
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-        ('onehot', OneHotEncoder(drop = 'first'))])
+        ('onehot', OneHotEncoder(handle_unknown = "ignore"))])
     
     preprocessor = ColumnTransformer(
         transformers=[
             ("feature_select", feature_selector, droped_cols),
             ("cat", categorical_transformer, final_cat_cols),
             ('num', numeric_transformer, final_num_cols)])
-        
+    
+    # pd.DataFrame(preprocessor.fit_transform(x_train))
+    
     param_grid_lr = {
-        'classifier__C': [0.1, 1.0, 10, 100],
+        'classifier__C': [0, 0.1, 1.0, 10, 100],
     }
 
     param_grid_rf = {
@@ -390,7 +391,7 @@ for month in dt_range:
     }
 
     lr_clf = Pipeline(steps=[('preprocessor', preprocessor),
-                          ('classifier', LogisticRegression())])    
+                          ('classifier', LogisticRegression(max_iter = 500))])    
     
 
     rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
@@ -405,10 +406,7 @@ for month in dt_range:
     grid_search_rf.fit(x_train, y_train)
     grid_search_lr.fit(x_train, y_train)
     
-    test_temp = test_temp.drop(["COD_SOL", "PREDICCION"], axis = 1)
-    
-    mask = test["MES_COTIZACION"] == month
-    test.loc[mask, "PREDICCION"] = grid_search_lr.predict(test_temp)
+    test.loc[test["MES_COTIZACION"] == month, label] = grid_search_lr.predict(test_temp)
     
     #-----------------------------------------
     
