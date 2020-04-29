@@ -230,6 +230,14 @@ test= joinColumns3(test, base_5)
 train.MES_COTIZACION = train.MES_COTIZACION + pd.offsets.MonthBegin(0)
 test.MES_COTIZACION = test.MES_COTIZACION + pd.offsets.MonthBegin(0)
 
+def DateToColumns(df, dt_column):
+    df[dt_column +  "_year"] = df[dt_column].apply(lambda x: str(x.year))
+    df[dt_column +  "_month"] = df[dt_column].apply(lambda x: str(x.month))
+    return df
+
+# train = DateToColumns(train, "MES_COTIZACION")
+# test = DateToColumns(test, "MES_COTIZACION")
+
 # "---------------------------------------------------------"
 
 # Dividiendo columnas por tipo
@@ -262,7 +270,7 @@ for month in dt_range:
 
     # Feature Selection 
     
-    # Dropping Null Columns
+    # Eliminando columnas con nulos
     
     droped_null_cols = []
     for col in (cat_cols + numeric_cols):
@@ -352,8 +360,8 @@ for month in dt_range:
     droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
 
     p_values.sort_values(ascending = False , inplace = True)
-    p_values.plot.bar()
-    plt.show()
+    # p_values.plot.bar()
+    # plt.show()
     
     droped_cols = droped_null_cols + droped_corr_cols + droped_ttest_cols + droped_chi2_cols
     # print(droped_cols)
@@ -383,7 +391,7 @@ for month in dt_range:
     # pd.DataFrame(preprocessor.fit_transform(x_train))
     
     param_grid_lr = {
-        'classifier__C': [0, 0.1, 1.0, 10, 100],
+        'classifier__C': [0.01, 0.001, 0.1, 1.0],
     }
 
     param_grid_rf = {
@@ -400,27 +408,29 @@ for month in dt_range:
     grid_search_lr = GridSearchCV(lr_clf, param_grid_lr, cv = 5, n_jobs = -1, scoring = "accuracy")
     grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring = "accuracy")
     
-    x_train = train_temp[[col for col in train_temp.columns if col != label]]
+    features = [col for col in train_temp.columns if col != label]
+    x_train = train_temp[features]
     y_train = train_temp[label]
 
     grid_search_rf.fit(x_train, y_train)
     grid_search_lr.fit(x_train, y_train)
     
-    test.loc[test["MES_COTIZACION"] == month, label] = grid_search_lr.predict(test_temp)
+    test.loc[test["MES_COTIZACION"] == month, label] =\
+        grid_search_lr.predict(test_temp[features])
     
     #-----------------------------------------
     
     # evaluator
     evaluation_df_rf = pd.DataFrame(grid_search_rf.cv_results_)
     evaluation_df_lr = pd.DataFrame(grid_search_lr.cv_results_)
-    print(grid_search_rf.best_score_)
-    print(grid_search_lr.best_score_)
+    print("Score RF: ", grid_search_rf.best_score_)
+    print("Score LR: ", grid_search_lr.best_score_)
     # CODIGO JULIO
     pp = grid_search_rf.best_estimator_['preprocessor']
     pp_cols = get_column_names_from_ColumnTransformer(pp)
     imp = grid_search_rf.best_estimator_['classifier'].feature_importances_
     index = np.argsort(imp)
-    index = np.concatenate((index[:15], index[-15:]))
+    index = np.concatenate((index[:15], index[15:16]))
     
     plt.title('Feature importances')
     plt.barh(range(len(index)), imp[index], color='b', align='center')
@@ -429,6 +439,7 @@ for month in dt_range:
     plt.figure(figsize = (12, 12))
     plt.savefig('plt_' + str(month.date()))
     
-    # roc_curve plot
+    # Segundo fit con variables importantes
+    
     
 
