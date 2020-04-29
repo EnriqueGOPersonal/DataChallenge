@@ -227,6 +227,21 @@ test = joinColumns3(test, base_4)
 train = joinColumns3(train, base_5)
 test= joinColumns3(test, base_5)
 
+def countSols(df):
+    df_gr = df.merge(df[["COD_CLIENTE", "MES_COTIZACION"]], on = "COD_CLIENTE", how = "left")
+    df_gr = df_gr[df_gr["MES_COTIZACION_y"] <= df_gr["MES_COTIZACION_x"]]
+    df_gr["counter"] = df_gr.loc[:, "COD_CLIENTE"]
+    df_gr = df_gr.rename(columns = {"MES_COTIZACION_x": "MES_COTIZACION"})
+    df_gr = df_gr.groupby(["COD_CLIENTE", "MES_COTIZACION"], as_index = False).agg({"counter": "count"})
+    df_gr = df_gr.rename(columns = {"counter": "NUM_SOLS"})
+    df_gr["NUM_SOLS"] = df_gr["NUM_SOLS"].fillna(0)
+    df  = df.merge(df_gr, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")    
+    return df
+# train.merge(train[["COD_CLIENTE", "MES_COTIZACION"]], on = "COD_CLIENTE", how = "left")
+
+train = countSols(train)
+test = countSols(test)
+
 train.MES_COTIZACION = train.MES_COTIZACION + pd.offsets.MonthBegin(0)
 test.MES_COTIZACION = test.MES_COTIZACION + pd.offsets.MonthBegin(0)
 
@@ -425,7 +440,7 @@ for month in dt_range:
     evaluation_df_lr = pd.DataFrame(grid_search_lr.cv_results_)
     print("Score RF: ", grid_search_rf.best_score_)
     print("Score LR: ", grid_search_lr.best_score_)
-    # CODIGO JULIO
+
     pp = grid_search_rf.best_estimator_['preprocessor']
     pp_cols = get_column_names_from_ColumnTransformer(pp)
     imp = grid_search_rf.best_estimator_['classifier'].feature_importances_
