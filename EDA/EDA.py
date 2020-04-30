@@ -203,18 +203,21 @@ def joinColumns3(df1, df2):
     df_num = df[["MES_COTIZACION", "COD_CLIENTE"] + nume]
     df_cate = df[["MES_COTIZACION", "COD_CLIENTE"] + cate]
     try:
-        df_gr_avg_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).mean()
+        df_gr_avg_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"]).mean()
         df_gr_avg_num.columns = [(col+"_mean") for col in df_gr_avg_num.columns]
+        df_gr_avg_num = df_gr_avg_num.reset_index() 
         df_gr_avg_num = df_gr_avg_num.fillna(0)
         df1 = df1.merge(df_gr_avg_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
-
-        df_gr_max_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).max()
+        
+        df_gr_max_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"]).max()
         df_gr_max_num.columns = [(col+"_max") for col in df_gr_max_num.columns]
+        df_gr_max_num = df_gr_max_num.reset_index() 
         df_gr_max_num = df_gr_max_num.fillna(0)
         df1 = df1.merge(df_gr_max_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
 
-        df_gr_min_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).min()
+        df_gr_min_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"]).min()
         df_gr_min_num.columns = [(col+"_max") for col in df_gr_min_num.columns]
+        df_gr_min_num = df_gr_min_num.reset_index() 
         df_gr_min_num = df_gr_min_num.fillna(0)
         df1 = df1.merge(df_gr_min_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
 
@@ -228,7 +231,7 @@ def joinColumns3(df1, df2):
             df_gr_c_cate = df_cate.groupby(["MES_COTIZACION", "COD_CLIENTE", col], as_index = False)\
                 .agg({"counter": "count"})\
                 .pivot_table(index = ["COD_CLIENTE", "MES_COTIZACION"], columns = col, aggfunc = np.sum)
-            
+
             df_gr_c_cate.columns = df_gr_c_cate.columns.droplevel()
             df_gr_c_cate.columns = [(col + "_" + str(c) + "_cnt") for c in df_gr_c_cate.columns]
             df_gr_c_cate = df_gr_c_cate.fillna(0)
@@ -240,8 +243,6 @@ def joinColumns3(df1, df2):
             pass
     
     return df1
-
-a = joinColumns3(train, base_4)
 
 train = joinColumns3(train, base_4)
 test = joinColumns3(test, base_4)
@@ -458,7 +459,7 @@ for month in dt_range[-1:]:
     features = [col for col in train_temp.columns if col != label]
     x_train = train_temp[features]
     y_train = train_temp[label]
-
+    # categorical_transformer.fit_transform(x_train[final_cat_cols])
     grid_search_rf.fit(x_train, y_train)
     grid_search_lr.fit(x_train, y_train)
     
