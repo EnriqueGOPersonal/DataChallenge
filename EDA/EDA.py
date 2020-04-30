@@ -81,8 +81,17 @@ base_3 = pd.read_csv(r"./data/Base3.csv", sep = ";", parse_dates = ["MES_COTIZAC
 base_4 = pd.read_csv(r"./data/Base4.csv", sep = ";", parse_dates = ["MES_COTIZACION", "MES_DATA"], date_parser = dateparse) # Base de saldos en el Sistema Financiero
 base_5 = pd.read_csv(r"./data/Base5.csv", sep = ";", parse_dates = ["MES_COTIZACION", "MES_DATA"], date_parser = dateparse) # Base de consumos con tarjeta
 
-for col in ["USO_BI_M0", "USO_BI_M1", "USO_BI_M2", "USO_BM_M0", "USO_BM_M1", "USO_BM_M2"]:
+for col in ["RNG_INGRESO", "USO_BI_M0", "USO_BI_M1", "USO_BI_M2", "USO_BM_M0", "USO_BM_M1", "USO_BM_M2"]:
     base_2[col] = base_2[col].astype(str)
+    
+for col in [c for c in base_3.columns if "RNG" in c]:
+    base_3[col] = base_3[col].astype(str)
+
+for col in [c for c in base_4.columns if "RNG" in c]:
+    base_4[col] = base_4[col].astype(str)
+
+for col in [c for c in base_5.columns if "RNG" in c]:
+    base_5[col] = base_5[col].astype(str)
 
 base_4["ST_CREDITO"] = base_4["ST_CREDITO"].astype(str)
 base_5[["CD_DIVISA", "TP_TARJETA"]] = base_5[["CD_DIVISA", "TP_TARJETA"]].astype(str)
@@ -195,31 +204,44 @@ def joinColumns3(df1, df2):
     df_cate = df[["MES_COTIZACION", "COD_CLIENTE"] + cate]
     try:
         df_gr_avg_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).mean()
+        df_gr_avg_num.columns = [(col+"_mean") for col in df_gr_avg_num.columns]
+        df_gr_avg_num = df_gr_avg_num.fillna(0)
         df1 = df1.merge(df_gr_avg_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
+
         df_gr_max_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).max()
+        df_gr_max_num.columns = [(col+"_max") for col in df_gr_max_num.columns]
+        df_gr_max_num = df_gr_max_num.fillna(0)
         df1 = df1.merge(df_gr_max_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
+
         df_gr_min_num = df_num.groupby(["MES_COTIZACION", "COD_CLIENTE"], as_index = False).min()
+        df_gr_min_num.columns = [(col+"_max") for col in df_gr_min_num.columns]
+        df_gr_min_num = df_gr_min_num.fillna(0)
         df1 = df1.merge(df_gr_min_num, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")
+
     except Exception as e:
-        print(e)
+        print("ERROR EN : ", e)
         pass
     
-    try:
-        for col in cate:
+    for col in cate:
+        try:            
             df_cate["counter"] = df_cate.loc[:, "COD_CLIENTE"]
             df_gr_c_cate = df_cate.groupby(["MES_COTIZACION", "COD_CLIENTE", col], as_index = False)\
                 .agg({"counter": "count"})\
                 .pivot_table(index = ["COD_CLIENTE", "MES_COTIZACION"], columns = col, aggfunc = np.sum)
-            df_gr_c_cate = df_gr_c_cate.fillna(0)
+            
             df_gr_c_cate.columns = df_gr_c_cate.columns.droplevel()
             df_gr_c_cate.columns = [(col + "_" + str(c) + "_cnt") for c in df_gr_c_cate.columns]
+            df_gr_c_cate = df_gr_c_cate.fillna(0)
             df_gr_c_cate = df_gr_c_cate.reset_index()
+            # print(df_gr_c_cate.head())
             df1 = df1.merge(df_gr_c_cate, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")    
-    except Exception as e:
-        print(e)
-        pass
+        except Exception as e:
+            print("ERROR EN : ", col, e)
+            pass
     
     return df1
+
+a = joinColumns3(train, base_4)
 
 train = joinColumns3(train, base_4)
 test = joinColumns3(test, base_4)
@@ -346,12 +368,12 @@ for month in dt_range[-1:]:
         
         if p > 0.05: # no se rechaza la H0 según la cual la distribución de estos datos es similar a la gaussiana
             # t-test
-            print(col)
+            # print(col)
             # separación de datos según la aceptación del crédito
             t0 = train_num[col][target == 0]
             t1 = train_num[col][target == 1]
             stat, p = ttest_ind(t0, t1, nan_policy = "omit", equal_var = False)
-            print('T-statistic={:.3f}, p={:.3f}'.format(stat, p))
+            # print('T-statistic={:.3f}, p={:.3f}'.format(stat, p))
             
             if p < 0.05: # se rechaza la H0 según la cual las medias de t0 y t1 no difieren significativamente
                 t_sel[t_ctr] = 1
@@ -440,8 +462,8 @@ for month in dt_range[-1:]:
     grid_search_rf.fit(x_train, y_train)
     grid_search_lr.fit(x_train, y_train)
     
-    test.loc[test["MES_COTIZACION"] == month, label] =\
-        grid_search_lr.predict(test_temp[features])
+    # test.loc[test["MES_COTIZACION"] == month, label] =\
+    #     grid_search_lr.predict(test_temp[features])
     
     #-----------------------------------------
     
