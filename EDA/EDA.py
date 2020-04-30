@@ -428,7 +428,7 @@ for month in dt_range[-1:]:
 
     categorical_transformer = Pipeline(steps=[
         ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-        ('onehot', OneHotEncoder(handle_unknown = "ignore"))])
+        ('onehot', OneHotEncoder(handle_unknown = "ignore", sparse = False))])
     
     preprocessor = ColumnTransformer(
         transformers=[
@@ -459,7 +459,7 @@ for month in dt_range[-1:]:
     features = [col for col in train_temp.columns if col != label]
     x_train = train_temp[features]
     y_train = train_temp[label]
-    # categorical_transformer.fit_transform(x_train[final_cat_cols])
+
     grid_search_rf.fit(x_train, y_train)
     grid_search_lr.fit(x_train, y_train)
     
