@@ -282,9 +282,15 @@ def tn(y_true, y_pred): return confusion_matrix(y_true, y_pred)[0, 0]
 def fp(y_true, y_pred): return confusion_matrix(y_true, y_pred)[0, 1]
 def fn(y_true, y_pred): return confusion_matrix(y_true, y_pred)[1, 0]
 def tp(y_true, y_pred): return confusion_matrix(y_true, y_pred)[1, 1]
+def sesitivity(y_true, y_pred): return confusion_matrix(y_true, y_pred)[0, 0] / (confusion_matrix(y_true, y_pred)[0, 0] + confusion_matrix(y_true, y_pred)[0, 1])
+def specificity(y_true, y_pred): return confusion_matrix(y_true, y_pred)[1, 1] / (confusion_matrix(y_true, y_pred)[1, 0] + confusion_matrix(y_true, y_pred)[1, 1])
 
 scoring = {'tp': make_scorer(tp), 'tn': make_scorer(tn),
-           'fp': make_scorer(fp), 'fn': make_scorer(fn), "acc": make_scorer(accuracy_score)}
+           'fp': make_scorer(fp), 'fn': make_scorer(fn), 
+           "acc": make_scorer(accuracy_score), 
+           "sesitivity": make_scorer(sesitivity), 
+           "specificity": make_scorer(specificity)
+           }
 
 # "---------------------------------------------------------"
 
