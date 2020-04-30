@@ -103,7 +103,7 @@ test = test.drop_duplicates(['MES_COTIZACION', 'COD_CLIENTE', 'GARANTIA', 'IMPOR
 ## Base_1
 
 #Cantidad de clientes unicos / longitud del df
-len(base_1.COD_CLIENTE.unique())/ base_1.shape[0]
+len(base_1.COD_CLIENTE.unique())/base_1.shape[0]
 # PLT no son únicos los clientes
 
 ## Base_2
@@ -253,6 +253,16 @@ def DateToColumns(df, dt_column):
 # train = DateToColumns(train, "MES_COTIZACION")
 # test = DateToColumns(test, "MES_COTIZACION")
 
+from sklearn.metrics import confusion_matrix, make_scorer, accuracy_score
+
+def tn(y_true, y_pred): return confusion_matrix(y_true, y_pred)[0, 0]
+def fp(y_true, y_pred): return confusion_matrix(y_true, y_pred)[0, 1]
+def fn(y_true, y_pred): return confusion_matrix(y_true, y_pred)[1, 0]
+def tp(y_true, y_pred): return confusion_matrix(y_true, y_pred)[1, 1]
+
+scoring = {'tp': make_scorer(tp), 'tn': make_scorer(tn),
+           'fp': make_scorer(fp), 'fn': make_scorer(fn), "acc": make_scorer(accuracy_score)}
+
 # "---------------------------------------------------------"
 
 # Dividiendo columnas por tipo
@@ -270,12 +280,11 @@ cat_cols = train.dtypes[(train.dtypes == "O") | (train.dtypes == "category")].in
 
 dt_range = pd.date_range(train.MES_COTIZACION.min(), train.MES_COTIZACION.max(), freq = "1MS")
 
-for month in dt_range:
+for month in dt_range[-1:]:
     print(month)
-    stages = []
+    
     train_temp = train[train.MES_COTIZACION <= month]
     test_temp  = test[test.MES_COTIZACION == month]
-    
     
     # Dejar una observación por cliente-mes
     train_temp = train_temp.sort_values("MES_COTIZACION", ascending = False)\
@@ -313,16 +322,17 @@ for month in dt_range:
                     #       "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
                     droped_corr_cols.append(colname)
                     corrmat = corrmat.drop(colname, axis = 1)
-
+                    # sns.heatmap(corrmat, center=0, cmap = "BrBG")
+    
     # Graficando histogramas de columnas numéricas
     
     # for col in train_num.columns:
-    #      train_num[col].plot.hist(title = col)
-    #      s = train_num.describe()[col].to_string() + \
-    #          "\nMissing Values: " + str(train_num.isnull().sum()[col]) + \
-    #          "\nMissing Values %: " + str(round(train_num.isnull().sum()[col]/len(train_num),4))
-    #      plt.figtext(1, 0.5, s)
-    #      plt.show()
+    #       train_num[col].plot.hist(title = col)
+    #       s = train_num.describe()[col].to_string() + \
+    #           "\nMissing Values: " + str(train_num.isnull().sum()[col]) + \
+    #           "\nMissing Values %: " + str(round(train_num.isnull().sum()[col]/len(train_num),4))
+    #       plt.figtext(1, 0.5, s)
+    #       plt.show()
 
     droped_ttest_cols = []         
     # * Evaluar normalidad "skewness"
@@ -336,12 +346,12 @@ for month in dt_range:
         
         if p > 0.05: # no se rechaza la H0 según la cual la distribución de estos datos es similar a la gaussiana
             # t-test
-            # print(col)
+            print(col)
             # separación de datos según la aceptación del crédito
             t0 = train_num[col][target == 0]
             t1 = train_num[col][target == 1]
             stat, p = ttest_ind(t0, t1, nan_policy = "omit", equal_var = False)
-            # print('T-statistic={:.3f}, p={:.3f}'.format(stat, p))
+            print('T-statistic={:.3f}, p={:.3f}'.format(stat, p))
             
             if p < 0.05: # se rechaza la H0 según la cual las medias de t0 y t1 no difieren significativamente
                 t_sel[t_ctr] = 1
@@ -349,7 +359,7 @@ for month in dt_range:
                 droped_ttest_cols.append(col)
                 pass
         t_ctr += 1
-        
+    
     t_selec = pd.DataFrame(t_sel, index = train_num.columns)
     
     # ## Análisis Columnas categóricas
@@ -420,8 +430,8 @@ for month in dt_range:
     rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
                           ('classifier', RandomForestClassifier(n_jobs = -1))])    
     
-    grid_search_lr = GridSearchCV(lr_clf, param_grid_lr, cv = 5, n_jobs = -1, scoring = "accuracy")
-    grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring = "accuracy")
+    grid_search_lr = GridSearchCV(lr_clf, param_grid_lr, cv = 5, n_jobs = -1, refit='acc', scoring = scoring)
+    grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, refit='acc', scoring = scoring)
     
     features = [col for col in train_temp.columns if col != label]
     x_train = train_temp[features]
@@ -440,12 +450,13 @@ for month in dt_range:
     evaluation_df_lr = pd.DataFrame(grid_search_lr.cv_results_)
     print("Score RF: ", grid_search_rf.best_score_)
     print("Score LR: ", grid_search_lr.best_score_)
-
+    
     pp = grid_search_rf.best_estimator_['preprocessor']
     pp_cols = get_column_names_from_ColumnTransformer(pp)
     imp = grid_search_rf.best_estimator_['classifier'].feature_importances_
     index = np.argsort(imp)
-    index = np.concatenate((index[:15], index[15:16]))
+    index = index[:15]
+    imp_cols = [pp_cols[i] for i in index]
     
     plt.title('Feature importances')
     plt.barh(range(len(index)), imp[index], color='b', align='center')
@@ -456,5 +467,10 @@ for month in dt_range:
     
     # Segundo fit con variables importantes
     
+    # Preprocessor(x_train) df con nombres nuevos [pp_cols[i] for i in index]
+    
+    preprocessor(x_train)[imp_cols]
+    
+    cross_val_rf = Pipeline('classifier', RandomForestClassifier(n_jobs = -1))
     
 
