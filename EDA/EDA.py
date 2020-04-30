@@ -351,7 +351,9 @@ for month in dt_range[-1:]:
                     #       "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
                     droped_corr_cols.append(colname)
                     corrmat = corrmat.drop(colname, axis = 1)
-                    # sns.heatmap(corrmat, center=0, cmap = "BrBG")
+                    f, ax = plt.subplots(figsize=(7, 5))
+                    ax = sns.heatmap(corrmat, center=0, cmap = "BrBG", 
+                                     vmin = -1, vmax = 1, annot=True, square = True)
     
     # Graficando histogramas de columnas numéricas
     
@@ -407,10 +409,10 @@ for month in dt_range[-1:]:
         df.loc[df[col].isnull(), col] = "NaN"
         df[col] = LabelEncoder().fit_transform(df[col])
     
-    X = df.drop([label], axis = 1)
+    x = df.drop([label], axis = 1)
     y = df[label]
-    chi_scores = chi2(X,y)
-    p_values = pd.Series(chi_scores[1], index = X.columns)
+    chi_scores = chi2(x,y)
+    p_values = pd.Series(chi_scores[1], index = x.columns)
     droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
 
     p_values.sort_values(ascending = False , inplace = True)
@@ -461,13 +463,14 @@ for month in dt_range[-1:]:
     
     grid_search_lr = GridSearchCV(lr_clf, param_grid_lr, cv = 5, n_jobs = -1, refit='acc', scoring = scoring)
     grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, refit='acc', scoring = scoring)
+    # grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring ='neg_log_loss')
     
     features = [col for col in train_temp.columns if col != label]
     x_train = train_temp[features]
     y_train = train_temp[label]
 
     grid_search_rf.fit(x_train, y_train)
-    grid_search_lr.fit(x_train, y_train)
+    # grid_search_lr.fit(x_train, y_train)
     
     # test.loc[test["MES_COTIZACION"] == month, label] =\
     #     grid_search_lr.predict(test_temp[features])
@@ -476,9 +479,9 @@ for month in dt_range[-1:]:
     
     # evaluator
     evaluation_df_rf = pd.DataFrame(grid_search_rf.cv_results_)
-    evaluation_df_lr = pd.DataFrame(grid_search_lr.cv_results_)
+    # evaluation_df_lr = pd.DataFrame(grid_search_lr.cv_results_)
     print("Score RF: ", grid_search_rf.best_score_)
-    print("Score LR: ", grid_search_lr.best_score_)
+    # print("Score LR: ", grid_search_lr.best_score_)
     
     pp = grid_search_rf.best_estimator_['preprocessor']
     pp_cols = get_column_names_from_ColumnTransformer(pp)
@@ -497,6 +500,7 @@ for month in dt_range[-1:]:
     # Segundo fit con variables importantes
     
     # Preprocessor(x_train) df con nombres nuevos [pp_cols[i] for i in index]  
+    
     best_params = grid_search_rf.best_estimator_['classifier'].get_params()
     rfc_imp = RandomForestClassifier(**best_params)
     x_train_imp = np.nan_to_num(x_train[imp_cols])
