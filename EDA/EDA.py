@@ -15,7 +15,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import LabelEncoder, StandardScaler, OneHotEncoder
 from sklearn.feature_selection import chi2
 from sklearn.impute import SimpleImputer
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_validate
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import shapiro
@@ -467,10 +467,9 @@ for month in dt_range[-1:]:
     
     # Segundo fit con variables importantes
     
-    # Preprocessor(x_train) df con nombres nuevos [pp_cols[i] for i in index]
+    # Preprocessor(x_train) df con nombres nuevos [pp_cols[i] for i in index]  
+    best_params = grid_search_rf.best_estimator_['classifier'].get_params()
+    rfc_imp = RandomForestClassifier(**best_params)
+    x_train_imp = np.nan_to_num(x_train[imp_cols])
+    cross_val_rf = cross_validate(rfc_imp, x_train_imp, y_train, cv = 5, n_jobs = -1, scoring = scoring)
     
-    preprocessor(x_train)[imp_cols]
-    
-    cross_val_rf = Pipeline('classifier', RandomForestClassifier(n_jobs = -1))
-    
-
