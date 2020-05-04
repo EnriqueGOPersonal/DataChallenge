@@ -351,9 +351,10 @@ for month in dt_range[-1:]:
                     #       "\n por lo tanto nos deshacemos de ella por aportar\n la misma información")
                     droped_corr_cols.append(colname)
                     corrmat = corrmat.drop(colname, axis = 1)
-                    f, ax = plt.subplots(figsize=(7, 5))
-                    ax = sns.heatmap(corrmat, center=0, cmap = "BrBG", 
-                                     vmin = -1, vmax = 1, annot=False)
+                    with sns.axes_style("white"):
+                        f, ax = plt.subplots(figsize=(14, 14))
+                        ax = sns.heatmap(corrmat, center=0, cmap = "BrBG", 
+                                         vmin = -1, vmax = 1, annot=False)
     
     # Graficando histogramas de columnas numéricas
     
