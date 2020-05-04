@@ -84,14 +84,14 @@ base_5 = pd.read_csv(r"./data/Base5.csv", sep = ";", parse_dates = ["MES_COTIZAC
 for col in ["RNG_INGRESO", "USO_BI_M0", "USO_BI_M1", "USO_BI_M2", "USO_BM_M0", "USO_BM_M1", "USO_BM_M2"]:
     base_2[col] = base_2[col].astype(str)
     
-for col in [c for c in base_3.columns if "RNG" in c]:
-    base_3[col] = base_3[col].astype(str)
+# for col in [c for c in base_3.columns if "RNG" in c]:
+#     base_3[col] = base_3[col].astype(str)
 
-for col in [c for c in base_4.columns if "RNG" in c]:
-    base_4[col] = base_4[col].astype(str)
+# for col in [c for c in base_4.columns if "RNG" in c]:
+#     base_4[col] = base_4[col].astype(str)
 
-for col in [c for c in base_5.columns if "RNG" in c]:
-    base_5[col] = base_5[col].astype(str)
+# for col in [c for c in base_5.columns if "RNG" in c]:
+#     base_5[col] = base_5[col].astype(str)
 
 base_4["ST_CREDITO"] = base_4["ST_CREDITO"].astype(str)
 base_5[["CD_DIVISA", "TP_TARJETA"]] = base_5[["CD_DIVISA", "TP_TARJETA"]].astype(str)
@@ -353,7 +353,7 @@ for month in dt_range[-1:]:
                     corrmat = corrmat.drop(colname, axis = 1)
                     f, ax = plt.subplots(figsize=(7, 5))
                     ax = sns.heatmap(corrmat, center=0, cmap = "BrBG", 
-                                     vmin = -1, vmax = 1, annot=True, square = True)
+                                     vmin = -1, vmax = 1, annot=False)
     
     # Graficando histogramas de columnas numéricas
     
@@ -364,7 +364,7 @@ for month in dt_range[-1:]:
     #           "\nMissing Values %: " + str(round(train_num.isnull().sum()[col]/len(train_num),4))
     #       plt.figtext(1, 0.5, s)
     #       plt.show()
-
+    
     droped_ttest_cols = []         
     # * Evaluar normalidad "skewness"
     target = train_temp[label]
@@ -416,8 +416,8 @@ for month in dt_range[-1:]:
     droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
 
     p_values.sort_values(ascending = False , inplace = True)
-    # p_values.plot.bar()
-    # plt.show()
+    p_values.plot.bar()
+    plt.show()
     
     droped_cols = droped_null_cols + droped_corr_cols + droped_ttest_cols + droped_chi2_cols
     # print(droped_cols)
@@ -468,7 +468,7 @@ for month in dt_range[-1:]:
     features = [col for col in train_temp.columns if col != label]
     x_train = train_temp[features]
     y_train = train_temp[label]
-
+    
     grid_search_rf.fit(x_train, y_train)
     # grid_search_lr.fit(x_train, y_train)
     
