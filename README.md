@@ -140,33 +140,6 @@ La implicación de un valor p < .05 es que la variable numérica puede dividirse
 ### Cross-validation y ParamGrid
 
 
-
-```python
-param_grid_lr = {
-    'classifier__C': [0.01, 0.001, 0.1, 1.0],
-}
-
-param_grid_rf = {
-    'classifier__n_estimators': [150, 200]
-}
-
-lr_clf = Pipeline(steps=[('preprocessor', preprocessor),
-                        ('classifier', LogisticRegression(max_iter = 500))])    
-    
-
-rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
-                        ('classifier', RandomForestClassifier(n_jobs = -1))])    
-    
-grid_search_lr = GridSearchCV(lr_clf, param_grid_lr, cv = 5, n_jobs = -1, scoring = "accuracy")
-grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring = "accuracy")
-    
-features = [col for col in train_temp.columns if col != label]
-x_train = train_temp[features]
-y_train = train_temp[label]
-
-grid_search_rf.fit(x_train, y_train)
-grid_search_lr.fit(x_train, y_train)
-```
 accuracy con probabilidad de 50% de threshold: 0.63692
 log loss: 0.6420
 
