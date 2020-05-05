@@ -47,20 +47,48 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
 ## Descripción de datos
 
--- Enrique
+Los datos empleados se encuentran descritos a profundidad en el archivo situado en la ruta:
+
 ``` 
-/directorio diccionario/
+\DataChallenge\data\"Diccionario Datos Challenge.xlsx"
 ```
 
-base_1 contiene X, su granularidad es a nivel #SOL
+Los datos empleados se encuentran en la ruta:
 
-¿Que contienen cada dataset? (de manera general, mencionar ubicación del diccionario)
+``` 
+\DataChallenge\data\"
+```
+
+Conteniendo cada uno:
+
+**Fichero 1** es la Base de cotizaciones, tiene una granularidad a nivel -mes de cotización / código de solicitud / código de cliente-.
+
+**Fichero 2** es la Base sociodemográfica + Digital, tiene una granularidad a nivel -mes de cotización / código de cliente-. 
+
+**Fichero 3** es la Base de productos BBVA, tiene una granularidad a nivel -mes de cotización / mes de registro de datos / código de cliente-.
+
+**Fichero 4** es la Base de saldos en el Sistema Financiero, tiene una granularidad a nivel -mes de cotización / mes de registro de datos / código de cliente / código de entidad bancaria-.
+
+**Fichero 5** es la Base de consumos con tarjeta, tiene una granularidad a nivel -mes de cotización / mes de registro de datos / código de cliente-.
 
 ## Carga y unión de datos
 
--- Enrique
-¿Como se unen y con que granularidad?
-Aquí estaría bien describimos las decisiones arbitrarias
+Los datos de las tablas descritas en la sección Descripción de datos fueron unidos en una tabla 
+de granularidad - mes de cotización / código de cliente-.
+
+En caso de que existieran registros repetidos para la combinación -mes de cotización /código de cliente- se generaron distintos tipos de agregaciones de acuerdo a el tipo de variable.
+
+Variables Categóricas
+
+Conteo de cantidad de registros de cada valor de la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos solicitudes con garantía "A" y una solicitud con garantía "B", se genera una columna llamada "garantia_A_cnt" con valor de 2 y una columna llamada "garantia_B_cnt" con valor de 1. El resto de columnas generadas para el resto de valores observados se mostrarán como 0.
+
+Variables Numéricas
+
+Promedio, máximo y mínimo de los valores observados para dicha la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos importes uno con valor de 200 y otro con valor de 300, se generarán las columnas "importe_avg" con valor de 250, "importe_max" con valor de 300 e "importe_min" con valor de 200. Cuando no existen observaciones se mostrará 0 en todas las columnas.
+
+Variable Dependiente (Categórica):
+
+Como se desea conservar la variable con valores de 1 y 0 únicamente, cuando aparecen dos solicitudes indistinguibles el mismo mes, se combinan en una sola solicitud que toma el valor de 1 si alguna de las dos fue aceptada y de 0 si ninguna lo fue. Adicionalmente se crea una columna con la cantidad de solicitudes encontradas para la el mismo mes de cotización para un mismo cliente.
 
 ## Generación de modelos
 
@@ -118,38 +146,16 @@ categorical_transformer = Pipeline(steps=[
 
 #### 1. Combinación variable numérica con variable numérica
 
--- Enrique
+Coeficiente de correlación
+
+Es una medida de dependencia lineal entre dos variables aleatorias cuantitativas. El valor del índice de correlación varía en el intervalo [-1,1], indicando el signo el sentido de la relación, y donde mayor sea el valor absoluto del índice de correlacion, existe más dependencia lineal.
+
+En la selección de variables se emplea este índice eliminar una de cada par de variables que dependan en alto grado (valor absoluto del indice > 0.9), pues una de las dos no aportará información nueva al modelo.
 
 #### 2. Combinación variable numérica con variable categórica
 
 Para determinar si el target (variable categórica) puede dividir los valores de variables numéricas en dos grupos con medias que diferentes de manera estadísticamente significante, empleamos la prueba t de Student como se muestra a continuación.
 
-``` python
-droped_ttest_cols = []         
-# * Evaluar normalidad "skewness"
-target = train_temp[label]
-t_sel = [0] * len(train_num.columns) # señala qué variables pueden ayudar a predecir target
-t_ctr = 0 # contador
-for col in train_num.columns:
-    # Shapiro-Wilk test
-    stat, p = shapiro(train_num[col])
-    if p > 0.05: # no se rechaza la H0 según la cual la distribución de estos datos es similar a la gaussiana
-        # t-test
-        # separación de datos según la aceptación del crédito
-        t0 = train_num[col][target == 0]
-        t1 = train_num[col][target == 1]
-        stat, p = ttest_ind(t0, t1, nan_policy = "omit", equal_var = False)
-        # print('T-statistic={:.3f}, p={:.3f}'.format(stat, p))
-            
-        if p < 0.05: # se rechaza la H0 según la cual las medias de t0 y t1 no difieren significativamente
-            t_sel[t_ctr] = 1
-        else:
-            droped_ttest_cols.append(col)
-            pass
-    t_ctr += 1
-        
-t_selec = pd.DataFrame(t_sel, index = train_num.columns)
-```
 En este proyecto fijamos el umbral de significancia estadística en valores p < 0.05. Sólo las variables con valores distribuidos de manera gaussiana fueron sometidos a la prueba t de Student. La normalidad fue evaluada por medio de la prueba de Shapiro-Wilk.
 
 La implicación de un valor p < .05 es que la variable numérica puede dividirse en dos grupos que difieren en su media y que están vinculados con uno de los dos valores del target. Esto sugiere que tal variable es útil para la predicción del target.
@@ -169,42 +175,16 @@ droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
 
 ### Cross-validation y ParamGrid
 
+Con el objetivo de identificar los hiperparámetros óptimos para el algoritmo de aprendizage, se utilizó la búsqueda por rejilla (grid search), la cual consiste en una búsqueda exhaustiva dentro de un subconjunto del espacio de hiperparámetros: valores C (el inverso del nivel de regularización, donde valores menores especifican una regularización mayor) de ```[0.01, 0.001, 0.1, 1.0]``` para la regresión logística y ``` [150, 200]``` como número de árboles de decisoón por bosque para el algoritmo de random forest.
 
+accuracy con probabilidad de 50% de threshold: 0.63692
+log loss: 0.6420
 
-```python
-param_grid_lr = {
-    'classifier__C': [0.01, 0.001, 0.1, 1.0],
-}
+### Métricas alternativas de evaluación
 
-param_grid_rf = {
-    'classifier__n_estimators': [150, 200]
-}
+El desempeño del modelo seleccionado se puede medir de manera alternativa a través de medidas como el area bajo la curva ROC (conocida común mente como AUC ROC) o el índice de Gini, que es equivalente a ```(2 * AUC_ROC) - 1```.
 
-lr_clf = Pipeline(steps=[('preprocessor', preprocessor),
-                        ('classifier', LogisticRegression(max_iter = 500))])    
-    
-
-rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
-                        ('classifier', RandomForestClassifier(n_jobs = -1))])    
-    
-grid_search_lr = GridSearchCV(lr_clf, param_grid_lr, cv = 5, n_jobs = -1, scoring = "accuracy")
-grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring = "accuracy")
-    
-features = [col for col in train_temp.columns if col != label]
-x_train = train_temp[features]
-y_train = train_temp[label]
-
-grid_search_rf.fit(x_train, y_train)
-grid_search_lr.fit(x_train, y_train)
-```
-accuracy
-neg log loss
-
-### Métricas alternas de evaluación
-
--- Enrique
-tp fn tn fp
-auc
+El mejor modelo reportó una AUC ROC de 0.6858, y por lo tanto un índice de Gini de 0.3716
 
 ## Conclusión
 
@@ -225,10 +205,8 @@ En cuanto a una mejora de la estructura del código se podría hacer modular por
 
 ## Contacto
 
-Nombre y mail
+Julio Sánchez González - <julio.sanchez.gonzalez@bbva.com>
 
-Julio Sánchez González - <oilujzehcnas@hotmail.com>
+Luis Enrique García Orozco (<luisenrique.garcia.orozco@bbva.com>)
 
-Enrique
-
-Uri
+Uri Eduardo Ramírez Pasos (<urieduardo.ramirez.contractor@bbva.com>)
