@@ -171,7 +171,7 @@ droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
 
 ## Evaluación del modelo
 
-### Cross-validation y ParamGrid
+### Cross-validation y Param_grid
 Realizar pruebas con los modelos usando los mismos datos con los que fueron entrenados conduce a un sobreajuste de los parámetros, lo cual limita la aplicabilidad del algoritmo a datos nuevos.  Para evitar el sobreajuste se usó la validación cruzada de <img src="https://latex.codecogs.com/svg.latex?k" title="k" /> dobleces. Este método crequiere la división de la base de datos de entrenamiento en <img src="https://latex.codecogs.com/svg.latex?k" title="k" /> bases más pequeñas. El procedimiento consiste en (1) entrenar el modelo usando <img src="https://latex.codecogs.com/svg.latex?k-1" title="k-1" /> de los dobleces y (2) validar el modelo resultante usando el resto de los datos. Esto permite el cálculo de métricas de rendimiento como la accuracy, la cual se expresa en la media de los valores calculados durante el ciclo de validaciones. 
 
 Con el objetivo de identificar los hiperparámetros óptimos para los algoritmos de aprendizage, se utilizó la búsqueda por rejilla (grid search), la cual consiste en una búsqueda exhaustiva dentro de un subconjunto del espacio de hiperparámetros: valores C (el inverso del nivel de regularización, donde valores menores especifican una regularización mayor) de ```[0.01, 0.001, 0.1, 1.0]``` para la regresión logística y ``` [150, 200]``` como número de árboles de decisoón por bosque para el algoritmo de random forest.     
