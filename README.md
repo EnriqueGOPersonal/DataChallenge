@@ -8,8 +8,6 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
 ### Cararísticas técnicas
 
--- Julio
-
 #### Lenguaje de programación
 
  - [Python 3.7](https://www.python.org/)
@@ -99,19 +97,48 @@ for month in dt_range:
     test_temp  = test[test.MES_COTIZACION == month]
 ```
 Teniendo el subset de datos de entrenamiento, se procesaran en una etapa llamada ***preprocess*** definida en un *Pipeline*, el cual se divide en 3 etapas:
+``` python
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("feature_select", feature_selector, droped_cols),
+        ("cat", categorical_transformer, final_cat_cols),
+        ('num', numeric_transformer, final_num_cols)
+])
+```
 
-- ***feature_select***: Desestimación de variables que fueron designadas por la selección de variables como "poco informativas" para el entramiento del modelo. Se usaron 3 métodos estadísticos:
+- ***feature_select***: Desestimación de variables que fueron designadas por la selección de variables como "poco informativas" para el entramiento del modelo. Se usaron cuatro métodos estadísticos:
     * Desestimación por porcentaje de nulos.
-    * Desestimación por Coeficiones de Correlación de Person.
+    * Desestimación por Coeficiones de Correlación de Pearson.
     * Desestimación por T-Test.
+    * Desestimación por Chi^2.
+``` python
+dropped_cols = dropped_null_cols + dropped_corr_cols + dropped_ttest_cols + dropped_chi2_cols
+
+feature_selector = Pipeline(steps = [
+    ("dropper", MultiColumnDropper(dropped_cols))
+])
+```
 
 - ***numeric_transformer***: Adpatación y ajuste de datos numéricos en dos etapas:
     * Imputación de la mediana a registros nulos.
     * Estandariazción de datos removiendo la media y escalando a la variación unitaria.
+``` python
+numeric_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+```
 
 - ***categorical_transformer***: Ajuste y codificación de datos categóricos en dos etapas:
     * Imputación de un valor constante *missing* a registros nulos.
     * Aplicar *OneHotEncoder* para cada categoría.
+``` python
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+    ('onehot', OneHotEncoder(handle_unknown = "ignore", sparse = False))
+])
+```
+
 
 ### Selección de variables
 
@@ -133,7 +160,14 @@ La implicación de un valor p < .05 es que la variable numérica puede dividirse
 
 #### 3. Combinación variable categórica con variable categórica
 
--- Julio
+En este proceso se uso el método **Chi^2** el cual se seleccionan las variables con los mayores resultados en el test estadistico chi-squared que determina la dependencia entre variables y el objetivo; de esta manera se podrá validar si son independiente e irrelevantes para la clasificación.
+
+En este ejemplo se obtuvieron aquellas variables cuyo *p_value* fuera mayor a 0.05 se desestimarían, ya que su significado estadístico es muy bajo y es irrelevante para el entrenamiento del modelo.
+``` python
+chi_scores = chi2(x,y)
+p_values = pd.Series(chi_scores[1], index = x.columns)
+droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
+```
 
 ## Evaluación del modelo
 
@@ -159,13 +193,15 @@ El mejor modelo reportó una AUC ROC de 0.6858, y por lo tanto un índice de Gin
 
 ## Trabajo a futuro
 
--- Julio
+Sin duda se podría hacer un trabajo mucho más exhaustivo en la exploración y análisis de los datos, así como la recopilación y agregación de fuentes de información que tengan relación con los datos. Algunos ejemplos para la recopilación de información de otras fuentes puede ser el uso de **web scrapping**, el cual se implemento de manera muy básica, pero podrían agregarse muchos más datos como el nivel socioeconómico y nivel de riesgo basado en su ubicación, valor de la moneda, temporada de alto o bajo gasto económico, información política y económica, etc. Esto puede ayudar bastante a determinar la relación de nueva información con la variable dependiente y mejorar los resultados del entrenamiento del modelo.
 
-Cosas por probar o que claramente son mejorables
+Para una mejora de la exploración de los datos para el entrenamiento del modelo se podrían implementar técnicas orientadas al **análisis descriptivo y dispersivo** (ANOVA) usando pruebas estadisticas como la desviación estándar y/o el rango intercuartil mostrados en gráficas para conocer más a fondo la relación, patrones y variación de los datos. Existe una herramienta llamada **Monte Carlo Simulation** la cual calcula el efecto de variables impredecibles en un factor específico. Otro ejemplo es el **Análisis Discriminatorio Lineal** (LDA) que utiliza variables continuas independientes y categóricas dependientes, el cual podría ser útil para obtener una combinación lineal de variables que logren caracterizar las clases y poder reducir algunas la dimensionalidad del data set dado que haciendo el *OneHotEncoding* de las categoricas, el data set crece bastante en columnas.
+
+En cuanto a una mejora de la estructura del código se podría hacer modular por funciones y escalable a la agregación y adaptación de nuevas herramientas.
 
 ## Contacto
 
-Julio
+Julio Sánchez González - <julio.sanchez.gonzalez@bbva.com>
 
 Luis Enrique García Orozco (<luisenrique.garcia.orozco@bbva.com>)
 
