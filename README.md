@@ -127,32 +127,6 @@ En la selección de variables se emplea este índice eliminar una de cada par de
 
 Para determinar si el target (variable categórica) puede dividir los valores de variables numéricas en dos grupos con medias que diferentes de manera estadísticamente significante, empleamos la prueba t de Student como se muestra a continuación.
 
-``` python
-droped_ttest_cols = []         
-# * Evaluar normalidad "skewness"
-target = train_temp[label]
-t_sel = [0] * len(train_num.columns) # señala qué variables pueden ayudar a predecir target
-t_ctr = 0 # contador
-for col in train_num.columns:
-    # Shapiro-Wilk test
-    stat, p = shapiro(train_num[col])
-    if p > 0.05: # no se rechaza la H0 según la cual la distribución de estos datos es similar a la gaussiana
-        # t-test
-        # separación de datos según la aceptación del crédito
-        t0 = train_num[col][target == 0]
-        t1 = train_num[col][target == 1]
-        stat, p = ttest_ind(t0, t1, nan_policy = "omit", equal_var = False)
-        # print('T-statistic={:.3f}, p={:.3f}'.format(stat, p))
-            
-        if p < 0.05: # se rechaza la H0 según la cual las medias de t0 y t1 no difieren significativamente
-            t_sel[t_ctr] = 1
-        else:
-            droped_ttest_cols.append(col)
-            pass
-    t_ctr += 1
-        
-t_selec = pd.DataFrame(t_sel, index = train_num.columns)
-```
 En este proyecto fijamos el umbral de significancia estadística en valores p < 0.05. Sólo las variables con valores distribuidos de manera gaussiana fueron sometidos a la prueba t de Student. La normalidad fue evaluada por medio de la prueba de Shapiro-Wilk.
 
 La implicación de un valor p < .05 es que la variable numérica puede dividirse en dos grupos que difieren en su media y que están vinculados con uno de los dos valores del target. Esto sugiere que tal variable es útil para la predicción del target.
