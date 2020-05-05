@@ -8,8 +8,6 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
 ### Cararísticas técnicas
 
--- Julio
-
 #### Lenguaje de programación
 
  - [Python 3.7](https://www.python.org/)
@@ -192,10 +190,6 @@ El mejor modelo reportó una AUC ROC de 0.6858, y por lo tanto un índice de Gin
 
 
 ## Trabajo a futuro
-
--- Julio
-
-Cosas por probar o que claramente son mejorables
 
 Sin duda se podría hacer un trabajo mucho más exhaustivo en la exploración y análisis de los datos, así como la recopilación y agregación de fuentes de información que tengan relación con los datos. Algunos ejemplos para la recopilación de información de otras fuentes puede ser el uso de **web scrapping**, el cual se implemento de manera muy básica, pero podrían agregarse muchos más datos como el nivel socioeconómico y nivel de riesgo basado en su ubicación, valor de la moneda, temporada de alto o bajo gasto económico, información política y económica, etc. Esto puede ayudar bastante a determinar la relación de nueva información con la variable dependiente y mejorar los resultados del entrenamiento del modelo.
 
