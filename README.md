@@ -121,7 +121,7 @@ Coeficiente de correlación
 
 Es una medida de dependencia lineal entre dos variables aleatorias cuantitativas. El valor del índice de correlación varía en el intervalo [-1,1], indicando el signo el sentido de la relación, y donde mayor sea el valor absoluto del índice de correlacion, existe más dependencia lineal.
 
-En la selección de variables se emplea este índice eliminar una de cada par de variables que dependan en alto grado, pues una de las dos no aportará información nueva al modelo.
+En la selección de variables se emplea este índice eliminar una de cada par de variables que dependan en alto grado (valor absoluto del indice > 0.9), pues una de las dos no aportará información nueva al modelo.
 
 #### 2. Combinación variable numérica con variable categórica
 
@@ -193,14 +193,14 @@ y_train = train_temp[label]
 grid_search_rf.fit(x_train, y_train)
 grid_search_lr.fit(x_train, y_train)
 ```
-accuracy
-neg log loss
+accuracy con probabilidad de 50% de threshold: 0.63692
+log loss: 0.6420
 
-### Métricas alternas de evaluación
+### Métricas alternativas de evaluación
 
+El desempeño del modelo seleccionado se puede medir de manera alternativa a través de medidas como el area bajo la curva ROC (conocida común mente como AUC ROC) o el índice de Gini, que es equivalente a ```(2 * AUC_ROC) - 1```.
 
-tp fn tn fp
-auc
+El mejor modelo reportó una AUC ROC de 0.6858, y por lo tanto un índice de Gini de 0.3716
 
 ## Conclusión
 
@@ -215,8 +215,8 @@ Cosas por probar o que claramente son mejorables
 
 ## Contacto
 
-Nombre y mail
-
 Julio
-Luis Enrique García Orozco [luisenrique.garcia.orozco@bbva.com]
+
+Luis Enrique García Orozco (<luisenrique.garcia.orozco@bbva.com>)
+
 Uri

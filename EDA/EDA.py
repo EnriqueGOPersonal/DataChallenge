@@ -462,9 +462,9 @@ for month in dt_range[-1:]:
     rf_clf = Pipeline(steps=[('preprocessor', preprocessor),
                           ('classifier', RandomForestClassifier(n_jobs = -1))])    
     
-    grid_search_lr = GridSearchCV(lr_clf, param_grid_lr, cv = 5, n_jobs = -1, refit='acc', scoring = scoring)
-    grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, refit='acc', scoring = scoring)
-    # grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring ='neg_log_loss')
+    # grid_search_lr = GridSearchCV(lr_clf, param_grid_lr, cv = 5, n_jobs = -1, refit='acc', scoring = scoring)
+    # grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, refit='acc', scoring = scoring)
+    grid_search_rf = GridSearchCV(rf_clf, param_grid_rf, cv = 5, n_jobs = -1, scoring ='neg_log_loss')
     
     features = [col for col in train_temp.columns if col != label]
     x_train = train_temp[features]
