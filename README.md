@@ -139,6 +139,7 @@ La implicación de un valor p < .05 es que la variable numérica puede dividirse
 
 ### Cross-validation y ParamGrid
 
+Con el objetivo de identificar los hiperparámetros óptimos para el algoritmo de aprendizage, se utilizó la búsqueda por rejilla (grid search), la cual consiste en una búsqueda exhaustiva dentro de un subconjunto del espacio de hiperparámetros: valores C (el inverso del nivel de regularización, donde valores menores especifican una regularización mayor) de ```[0.01, 0.001, 0.1, 1.0]``` para la regresión logística y ``` [150, 200]``` como número de árboles de decisoón por bosque para el algoritmo de random forest.
 
 accuracy con probabilidad de 50% de threshold: 0.63692
 log loss: 0.6420
