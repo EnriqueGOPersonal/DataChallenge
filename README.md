@@ -176,8 +176,7 @@ Realizar pruebas con los modelos usando los mismos datos con los que fueron entr
 
 Con el objetivo de identificar los hiperparámetros óptimos para los algoritmos de aprendizage, se utilizó la búsqueda por rejilla (grid search), la cual consiste en una búsqueda exhaustiva dentro de un subconjunto del espacio de hiperparámetros: valores C (el inverso del nivel de regularización, donde valores menores especifican una regularización mayor) de ```[0.01, 0.001, 0.1, 1.0]``` para la regresión logística y ``` [150, 200]``` como número de árboles de decisoón por bosque para el algoritmo de random forest.     
 
-accuracy con probabilidad de 50% de threshold: 0.63692  
-log loss: 0.6420 
+Alcanzamos una accuracy con probabilidad de 50% con un umbral de 0.63692 y una pérdida logarítmica de 0.6420. 
 
 
 ### Métricas alternativas de evaluación
