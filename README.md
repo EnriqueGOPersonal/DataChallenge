@@ -72,21 +72,50 @@ Conteniendo cada uno:
 ## Carga y unión de datos
 
 Los datos de las tablas descritas en la sección Descripción de datos fueron unidos en una tabla 
-de granularidad - mes de cotización / código de cliente-.
+de granularidad - mes de cotización / código de cliente.
 
 En caso de que existieran registros repetidos para la combinación -mes de cotización /código de cliente- se generaron distintos tipos de agregaciones de acuerdo a el tipo de variable.
 
-Variables Categóricas
+### Variables Categóricas
 
 Conteo de cantidad de registros de cada valor de la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos solicitudes con garantía "A" y una solicitud con garantía "B", se genera una columna llamada "garantia_A_cnt" con valor de 2 y una columna llamada "garantia_B_cnt" con valor de 1. El resto de columnas generadas para el resto de valores observados se mostrarán como 0.
 
-Variables Numéricas
+### Variables Numéricas
 
 Promedio, máximo y mínimo de los valores observados para dicha la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos importes uno con valor de 200 y otro con valor de 300, se generarán las columnas "importe_avg" con valor de 250, "importe_max" con valor de 300 e "importe_min" con valor de 200. Cuando no existen observaciones se mostrará 0 en todas las columnas.
 
-Variable Dependiente (Categórica):
+### Variable Dependiente (Categórica):
 
 Como se desea conservar la variable con valores de 1 y 0 únicamente, cuando aparecen dos solicitudes indistinguibles el mismo mes, se combinan en una sola solicitud que toma el valor de 1 si alguna de las dos fue aceptada y de 0 si ninguna lo fue. Adicionalmente se crea una columna con la cantidad de solicitudes encontradas para la el mismo mes de cotización para un mismo cliente.
+
+## Selección de variables
+
+### 1. Combinación variable numérica con variable numérica
+
+Coeficiente de correlación
+
+Es una medida de dependencia lineal entre dos variables aleatorias cuantitativas. El valor del índice de correlación varía en el intervalo [-1,1], indicando el signo el sentido de la relación, y donde mayor sea el valor absoluto del índice de correlacion, existe más dependencia lineal.
+
+En la selección de variables se emplea este índice eliminar una de cada par de variables que dependan en alto grado (valor absoluto del indice > 0.9), pues una de las dos no aportará información nueva al modelo.
+
+### 2. Combinación variable numérica con variable categórica
+
+Para determinar si el target (variable categórica) puede dividir los valores de variables numéricas en dos grupos con medias que diferentes de manera estadísticamente significante, empleamos la prueba t de Student como se muestra a continuación.
+
+En este proyecto fijamos el umbral de significancia estadística en valores <img src="https://latex.codecogs.com/svg.latex?p < .05" title="p < .05" />. Sólo las variables con valores distribuidos de manera gaussiana fueron sometidos a la prueba t de Student. La normalidad fue evaluada por medio de la prueba de Shapiro-Wilk.
+
+La implicación de un valor <img src="https://latex.codecogs.com/svg.latex?p < .05" title="p < .05" /> es que la variable numérica puede dividirse en dos grupos que difieren en su media y que están vinculados con uno de los dos valores del target. Esto sugiere que tal variable es útil para la predicción del target.
+
+### 3. Combinación variable categórica con variable categórica
+
+En este proceso se uso el método <img src="https://latex.codecogs.com/svg.latex?\chi^{2}" title="\chi^{2}" /> el cual se seleccionan las variables con los mayores resultados en el test estadistico chi-squared que determina la dependencia entre variables y el objetivo; de esta manera se podrá validar si son independiente e irrelevantes para la clasificación.
+
+En este ejemplo se obtuvieron aquellas variables cuyo valor p fuera mayor a 0.05 se desestimarían, ya que su significado estadístico es muy bajo y es irrelevante para el entrenamiento del modelo.
+``` python
+chi_scores = chi2(x,y)
+p_values = pd.Series(chi_scores[1], index = x.columns)
+droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
+```
 
 ## Generación de modelos
 
@@ -139,36 +168,6 @@ categorical_transformer = Pipeline(steps=[
 ])
 ```
 
-
-### Selección de variables
-
-#### 1. Combinación variable numérica con variable numérica
-
-Coeficiente de correlación
-
-Es una medida de dependencia lineal entre dos variables aleatorias cuantitativas. El valor del índice de correlación varía en el intervalo [-1,1], indicando el signo el sentido de la relación, y donde mayor sea el valor absoluto del índice de correlacion, existe más dependencia lineal.
-
-En la selección de variables se emplea este índice eliminar una de cada par de variables que dependan en alto grado (valor absoluto del indice > 0.9), pues una de las dos no aportará información nueva al modelo.
-
-#### 2. Combinación variable numérica con variable categórica
-
-Para determinar si el target (variable categórica) puede dividir los valores de variables numéricas en dos grupos con medias que diferentes de manera estadísticamente significante, empleamos la prueba t de Student como se muestra a continuación.
-
-En este proyecto fijamos el umbral de significancia estadística en valores <img src="https://latex.codecogs.com/svg.latex?p < .05" title="p < .05" />. Sólo las variables con valores distribuidos de manera gaussiana fueron sometidos a la prueba t de Student. La normalidad fue evaluada por medio de la prueba de Shapiro-Wilk.
-
-La implicación de un valor <img src="https://latex.codecogs.com/svg.latex?p < .05" title="p < .05" /> es que la variable numérica puede dividirse en dos grupos que difieren en su media y que están vinculados con uno de los dos valores del target. Esto sugiere que tal variable es útil para la predicción del target.
-
-#### 3. Combinación variable categórica con variable categórica
-
-En este proceso se uso el método <img src="https://latex.codecogs.com/svg.latex?\chi^{2}" title="\chi^{2}" /> el cual se seleccionan las variables con los mayores resultados en el test estadistico chi-squared que determina la dependencia entre variables y el objetivo; de esta manera se podrá validar si son independiente e irrelevantes para la clasificación.
-
-En este ejemplo se obtuvieron aquellas variables cuyo valor p fuera mayor a 0.05 se desestimarían, ya que su significado estadístico es muy bajo y es irrelevante para el entrenamiento del modelo.
-``` python
-chi_scores = chi2(x,y)
-p_values = pd.Series(chi_scores[1], index = x.columns)
-droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
-```
-
 ## Evaluación del modelo
 
 ### Cross-validation y Param_grid
@@ -202,6 +201,6 @@ En cuanto a una mejora de la estructura del código se podría hacer modular por
 
 Julio Sánchez González - <julio.sanchez.gonzalez@bbva.com>
 
-Luis Enrique García Orozco (<luisenrique.garcia.orozco@bbva.com>)
+Luis Enrique García Orozco - <luisenrique.garcia.orozco@bbva.com>
 
-Uri Eduardo Ramírez Pasos, <urieduardo.ramirez.contractor@bbva.com>
+Uri Eduardo Ramírez Pasos - <urieduardo.ramirez.contractor@bbva.com>
