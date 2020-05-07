@@ -8,7 +8,7 @@ from datetime import datetime
 def ScrapChangeTypes(now = datetime.now()):
 
     years = range(2017, now.year+1)
-        
+    
     months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
     converter = pd.DataFrame(months, columns = ["month"])
     converter["month_number"] = range(1,13)
@@ -42,7 +42,8 @@ def ScrapChangeTypes(now = datetime.now()):
     df["month"] = df.date.apply(lambda x: x.split("/")[1])
     
     df = df.merge(converter, on = "month")
-    df.to_csv("/data/change_type_" + str(now.date()) + "+.csv")
+    df.to_csv("data/change_type_" + str(now.date()) + ".csv")
 
     return df
 
+a = ScrapChangeTypes()
