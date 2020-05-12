@@ -47,3 +47,6 @@ def ScrapChangeTypes(now = datetime.now()):
     return df
 
 a = ScrapChangeTypes()
+
+
+

@@ -23,6 +23,9 @@ from scipy.stats import normaltest
 from scipy.stats import ttest_ind
 from sklearn.pipeline import Pipeline
 
+import datetime
+from dateutil.relativedelta import relativedelta as rd
+
 class MultiColumnDropper():
     def __init__(self,columns = None):
         self.columns = columns # array of column names to encode
@@ -96,6 +99,19 @@ for col in ["RNG_INGRESO", "USO_BI_M0", "USO_BI_M1", "USO_BI_M2", "USO_BM_M0", "
 base_4["ST_CREDITO"] = base_4["ST_CREDITO"].astype(str)
 base_5[["CD_DIVISA", "TP_TARJETA"]] = base_5[["CD_DIVISA", "TP_TARJETA"]].astype(str)
 
+# Entrada a CNN
+
+cnn_base_5 = base_5.merge(base_5[["MES_DATA", "COD_CLIENTE"]], on = ["COD_CLIENTE"], how = "left")
+cnn_base_5["MES_COTIZACION_prev"] = cnn_base_5.MES_COTIZACION.apply(lambda x: x + rd(months=-12))
+cnn_base_5 = cnn_base_5[(cnn_base_5.MES_DATA_x <= cnn_base_5.MES_COTIZACION) &
+                        (cnn_base_5.MES_DATA_x > (cnn_base_5.MES_COTIZACION_prev))]
+
+cnn_base_5 = cnn_base_5.groupby(["COD_CLIENTE", "MES_COTIZACION", "MES_DATA_x"], as_index = False).agg({"RNG_IMPORTE": "sum"})
+cnn_base_5["num_mes"] = cnn_base_5.apply(lambda x: rd(x.MES_DATA_x, x.MES_COTIZACION).months+12, axis = 1)
+
+cnn_base_5 = cnn_base_5.pivot_table(index = ["COD_CLIENTE", "MES_COTIZACION"], values = "RNG_IMPORTE", columns = "num_mes", aggfunc=np.sum).reset_index()
+cnn_base_5 = cnn_base_5.fillna(0)
+
 # Depurando Trainset 
 
 base_1 = base_1.groupby(['MES_COTIZACION', 'COD_CLIENTE', 'GARANTIA', 'IMPORTE',
@@ -147,6 +163,7 @@ base_5.COD_CLIENTE.isnull().sum()
 # "--------------------UNIENDO DATAFRAMES ------------------"
 # "---------------------------------------------------------"
 
+# Join base de cotizaciones con info sociodemográfica
 def joinColumns(df1, df2):
     df = df1.merge(df2, on = "COD_CLIENTE", how = "left")
     df = df.loc[(df["MES_COTIZACION_y"] <= df["MES_COTIZACION_x"]) |
@@ -250,6 +267,16 @@ test = joinColumns3(test, base_4)
 train = joinColumns3(train, base_5)
 test= joinColumns3(test, base_5)
 
+def joinCNNColumns(df, cnn_df):
+    df = df.merge(cnn_df, on = ["COD_CLIENTE", "MES_COTIZACION"], how = "left")
+    df[cnn_df.columns] = df[cnn_df.columns].fillna(0)
+    return df
+
+train = joinCNNColumns(train, cnn_base_5)
+test= joinCNNColumns(test, cnn_base_5)
+
+c = train.head(100)
+
 def countSols(df):
     df_gr = df.merge(df[["COD_CLIENTE", "MES_COTIZACION"]], on = "COD_CLIENTE", how = "left")
     df_gr = df_gr[df_gr["MES_COTIZACION_y"] <= df_gr["MES_COTIZACION_x"]]
@@ -260,7 +287,6 @@ def countSols(df):
     df_gr["NUM_SOLS"] = df_gr["NUM_SOLS"].fillna(0)
     df  = df.merge(df_gr, on = ["MES_COTIZACION", "COD_CLIENTE"], how = "left")    
     return df
-# train.merge(train[["COD_CLIENTE", "MES_COTIZACION"]], on = "COD_CLIENTE", how = "left")
 
 train = countSols(train)
 test = countSols(test)
@@ -268,10 +294,11 @@ test = countSols(test)
 train.MES_COTIZACION = train.MES_COTIZACION + pd.offsets.MonthBegin(0)
 test.MES_COTIZACION = test.MES_COTIZACION + pd.offsets.MonthBegin(0)
 
-def DateToColumns(df, dt_column):
-    df[dt_column +  "_year"] = df[dt_column].apply(lambda x: str(x.year))
-    df[dt_column +  "_month"] = df[dt_column].apply(lambda x: str(x.month))
-    return df
+# def DateToColumns(df, dt_column)
+#     "Función que desglosa las columnas año y mes para una columna de tipo fecha"
+#     df[dt_column +  "_year"] = df[dt_column].apply(lambda x: str(x.year))
+#     df[dt_column +  "_month"] = df[dt_column].apply(lambda x: str(x.month))
+#     return df
 
 # train = DateToColumns(train, "MES_COTIZACION")
 # test = DateToColumns(test, "MES_COTIZACION")
