@@ -84,4 +84,7 @@ def ScrapChangeTypes(min_date, now = datetime.now()):
 
     return df
 
-a = ScrapChangeTypes(datetime(2019,12,1))
+a = ScrapChangeTypes()
+
+
+
