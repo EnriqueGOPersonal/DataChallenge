@@ -181,7 +181,8 @@ feature_selector = Pipeline(steps = [
 <p>El desempeño del modelo seleccionado se puede medir de manera alternativa para un treshold dado a través de medidas como el score F1, Precision, Recall, etc. dependiendo de las necesidades del negocio.</p>
 <p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura1.PNG" alt="Figura1"></p>
 <p>La Figura 1 nos muestra el costo-beneficio de la variación de un treshold a través de la visualización de los puntos de la curva ROC, brindando así una herramienta comparativa de fácil interpretación.</p>
-<p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura2.PNG" alt="Figura2"></p>
+<p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura2.PNG" alt="Figura2">
+Figura 2</p>
 <p>En la Figura 2 se observa de manera complementaria el costo-beneficio entre la Precisión y el TPR.</p>
 <p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura3.PNG" alt="Figura3"></p>
 <p>Si se desea conocer el treshold en el cual el costo beneficio de la Figura 2 es más óptimo, se pueden comparar los distintos tresholds a través de la gráfica del score F1 (Figura 3), la cual revela que el treshold más óptimo (de mayor valor F1) es el de 0.34.</p>
@@ -191,13 +192,17 @@ feature_selector = Pipeline(steps = [
 <p>Las 4 variables con mayor importancia en el modelo seleccionado son: <em>CTZSHP_CNTRY2_CD</em>, <em>CTZSHP_CNTRY1_CD</em>, <em>CD_OCUPACION</em> y <em>RES_CNTRY_CD</em>.</p>
 <p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura5.PNG" alt="Figura5"></p>
 <p>La Figura 5 ejemplifica una visualización sugerida para evaluar el impacto que tiene la una variable (en este caso CTZSHP_CNTRY1_CD) sobre el desempeño del modelo. Mayor análisis y conocimiento del negocio se requieren para generar hipótesis al respecto.</p>
+<p>Un Dashboard interactivo con las visualizaciones mencionadas y complementarias se ubica en la ruta:</p>
+<pre><code><code><div>\SDATOOL-31455\Modelos\&quot;Data Challenge - Caso 2&quot;\&quot;BASEMODELO_lr_prediction.pbix&quot;
+</div></code></code></pre>
 <h1 id="9-conclusión">9. Conclusión</h1>
+<p>FALTA</p>
 <p>Los modelos utilizados presentan un AUC ROC demasiado bajo y un índice de Gini demasiado alto como para ponerlos en producción. Cabe destacar que el análisis de importancia arrojó variables relacionadas con el crédito hipotecario, las cuentas de fondos mutuo, las cuentas compensación por Tiempo de Servicio y el número de operaciones en dólares como los principales predictores de la decisión del cliente. Esto sugiere que el capital acumulado define si el cliente cuenta con el respaldo económico para tomar el riesgo que representan los créditos bancarios.</p>
-<h1 id="10-trabajo-a-futuro">10. Trabajo a futuro</h1>
+<h1 id="10-10-trabajo-a-futuro">10. 10. Trabajo a futuro</h1>
 <p>Sin duda se podría hacer un trabajo mucho más exhaustivo en la exploración y análisis de los datos, así como la recopilación y agregación de fuentes de información que tengan relación con los datos. Algunos ejemplos para la recopilación de información de otras fuentes puede ser el uso de <strong>web scrapping</strong>, el cual se implemento de manera muy básica, pero podrían agregarse muchos más datos como el nivel socioeconómico y nivel de riesgo basado en su ubicación, valor de la moneda, temporada de alto o bajo gasto económico, información política y económica, etc. Esto puede ayudar bastante a determinar la relación de nueva información con la variable dependiente y mejorar los resultados del entrenamiento del modelo.</p>
 <p>Para una mejora de la exploración de los datos para el entrenamiento del modelo se podrían implementar técnicas orientadas al <strong>análisis descriptivo y dispersivo</strong> (ANOVA) usando pruebas estadisticas como la desviación estándar y/o el rango intercuartil mostrados en gráficas para conocer más a fondo la relación, patrones y variación de los datos. Existe una herramienta llamada <strong>Monte Carlo Simulation</strong> la cual calcula el efecto de variables impredecibles en un factor específico. Otro ejemplo es el <strong>Análisis Discriminatorio Lineal</strong> (LDA) que utiliza variables continuas independientes y categóricas dependientes, el cual podría ser útil para obtener una combinación lineal de variables que logren caracterizar las clases y poder reducir algunas la dimensionalidad del data set dado que haciendo el <em>OneHotEncoding</em> de las categoricas, el data set crece bastante en columnas.</p>
 <p>En cuanto a una mejora de la estructura del código se podría hacer modular por funciones y escalable a la agregación y adaptación de nuevas herramientas.</p>
-<h1 id="11-contacto">11. Contacto</h1>
+<h1 id="11-11-contacto">11. 11. Contacto</h1>
 <p>Julio Sánchez González - <a href="mailto:julio.sanchez.gonzalez@bbva.com">julio.sanchez.gonzalez@bbva.com</a></p>
 <p>Luis Enrique García Orozco - <a href="mailto:luisenrique.garcia.orozco@bbva.com">luisenrique.garcia.orozco@bbva.com</a></p>
 <p>Uri Eduardo Ramírez Pasos - <a href="mailto:urieduardo.ramirez.contractor@bbva.com">urieduardo.ramirez.contractor@bbva.com</a></p>
