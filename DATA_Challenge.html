@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>1. Descripción de proyecto y objetivo</title>
+        <style>
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+        
+        <style>
+.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
+</style>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        
+        
+        
+    </head>
+    <body class="vscode-light">
+        <h2 id="data-challenge-2">Data Challenge 2</h2>
+<p>Table of contents (up to date)</p>
+<ul>
+<li><a href="#descripci%C3%B3n-de-proyecto-y-objetivo">Descripción</a></li>
+<li><a href="#15-selecci%C3%B3n-de-variables">Selección de variables</a></li>
+</ul>
+<h1 id="1-descripción-de-proyecto-y-objetivo">1. Descripción de proyecto y objetivo</h1>
+<p>Los créditos que ofrecen los bancos varían ampliamente por tasa, importe y plazo. Para incrementar el rendemiento de préstamos crediticios, los bancos deben identificar qué condiciones bancarias y demográficas incrementan la probabilidad de que el cliente acepte una oferta de crédito.</p>
+<p>En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona sobre clientes y sus transacciones para explotarla a través de modelos de clasificación de Machine Learning que ayuden a identificar las condiciones de préstamo bajo las que un cliente aceptará una oferta crediticia.</p>
+<h1 id="2-cararísticas-técnicas">2. Cararísticas técnicas</h1>
+<h2 id="21-lenguajes-de-programación">2.1. Lenguajes de programación</h2>
+<ul>
+<li><a href="https://www.python.org/">Python 3.7</a></li>
+</ul>
+<h2 id="22-librerías-de-python">2.2. Librerías de Python:</h2>
+<ul>
+<li>
+<p><a href="https://pandas.pydata.org/">Pandas 1.0.3</a></p>
+<p>Uso para lectura y manipulación de los datos como objetos <strong>DataFrame</strong>.</p>
+</li>
+<li>
+<p><a href="https://numpy.org/">NumPy 1.18</a></p>
+<p>Uso para modificación, identificación y manejo de los datos.</p>
+</li>
+<li>
+<p>[Pyspark FALTA VERSION](FALTA LINK)</p>
+<p>Uso para obtención de datos estadísticos <em>T-Test</em> y prubeas de normalidad <em>Shapiro-Wilk</em>.
+Uso para selección de variables; procesamiento, imputación y trasformación de datos; entranmiento y selcción del modelo. (<em>Random Forest</em>, <em>Logistic Regression</em>)</p>
+</li>
+<li>
+<p>[functools FALTA VERSION](FALTA LINK)</p>
+<p>Uso para obtención de datos estadísticos <em>T-Test</em> y prubeas de normalidad <em>Shapiro-Wilk</em>.</p>
+</li>
+<li>
+<p>[iterools FALTA VERSION](FALTA LINK)</p>
+</li>
+</ul>
+<h2 id="23-ide-de-ejecución-de-código">2.3. IDE de ejecución de código</h2>
+<ul>
+<li><a href="https://www.spyder-ide.org/">Anaconda - Spyder 4.0</a></li>
+</ul>
+<h2 id="24-software-de-visualización-de-datos">2.4. Software de Visualización de datos</h2>
+<ul>
+<li>[Power BI](FALTA LINK)</li>
+</ul>
+<h1 id="3-descripción-de-datos">3. Descripción de datos</h1>
+<p>Los datos empleados se encuentran descritos a profundidad en el archivo situado en la ruta:</p>
+<pre><code><code><div>\SDATOOL-31455\Modelos\&quot;Data Challenge - Caso 2&quot;\&quot;diccionario_data.xlsx&quot;
+</div></code></code></pre>
+<p>Los datos empleados se encuentran en la ruta:</p>
+<pre><code><code><div>\SDATOOL-31455\Modelos\&quot;Data Challenge - Caso 2&quot;\&quot;diccionario_data.xlsx&quot;
+</div></code></code></pre>
+<h1 id="4-carga-y-unión-de-datos">4. Carga y unión de datos</h1>
+<p>Los datos de las tablas descritas en la sección Descripción de datos fueron unidos en una tabla
+de granularidad - mes de cotización / código de cliente.</p>
+<p>En caso de que existieran registros repetidos para la combinación -mes de cotización /código de cliente- se generaron distintos tipos de agregaciones de acuerdo a el tipo de variable.</p>
+<h2 id="41-variables-categóricas">4.1. Variables Categóricas</h2>
+<p>Conteo de cantidad de registros de cada valor de la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos solicitudes con garantía &quot;A&quot; y una solicitud con garantía &quot;B&quot;, se genera una columna llamada &quot;garantia_A_cnt&quot; con valor de 2 y una columna llamada &quot;garantia_B_cnt&quot; con valor de 1. El resto de columnas generadas para el resto de valores observados se mostrarán como 0.</p>
+<h2 id="42-variables-numéricas">4.2. Variables Numéricas</h2>
+<p>Promedio, máximo y mínimo de los valores observados para dicha la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos importes uno con valor de 200 y otro con valor de 300, se generarán las columnas &quot;importe_avg&quot; con valor de 250, &quot;importe_max&quot; con valor de 300 e &quot;importe_min&quot; con valor de 200. Cuando no existen observaciones se mostrará 0 en todas las columnas.</p>
+<h2 id="43-variable-dependiente-categórica">4.3. Variable Dependiente (Categórica):</h2>
+<p>Como se desea conservar la variable con valores de 1 y 0 únicamente, cuando aparecen dos solicitudes indistinguibles el mismo mes, se combinan en una sola solicitud que toma el valor de 1 si alguna de las dos fue aceptada y de 0 si ninguna lo fue. Adicionalmente se crea una columna con la cantidad de solicitudes encontradas para la el mismo mes de cotización para un mismo cliente.</p>
+<h1 id="5-selección-de-variables">5. Selección de variables</h1>
+<h2 id="51-combinación-variable-numérica-con-variable-numérica">5.1. Combinación variable numérica con variable numérica</h2>
+<p>Coeficiente de correlación</p>
+<p>Es una medida de dependencia lineal entre dos variables aleatorias cuantitativas. El valor del índice de correlación varía en el intervalo [-1,1], indicando el signo el sentido de la relación, y donde mayor sea el valor absoluto del índice de correlacion, existe más dependencia lineal.</p>
+<p>En la selección de variables se emplea este índice eliminar una de cada par de variables que dependan en alto grado (valor absoluto del indice &gt; 0.9), pues una de las dos no aportará información nueva al modelo.</p>
+<h2 id="52-combinación-variable-numérica-con-variable-categórica">5.2. Combinación variable numérica con variable categórica</h2>
+<p>Para determinar si el target (variable categórica) puede dividir los valores de variables numéricas en dos grupos con medias que diferentes de manera estadísticamente significante, empleamos la prueba t de Student como se muestra a continuación.</p>
+<p>En este proyecto fijamos el umbral de significancia estadística en valores <img src="https://latex.codecogs.com/svg.latex?p < .05" title="p < .05" />. Sólo las variables con valores distribuidos de manera gaussiana fueron sometidos a la prueba t de Student. La normalidad fue evaluada por medio de la prueba de Shapiro-Wilk.</p>
+<p>La implicación de un valor <img src="https://latex.codecogs.com/svg.latex?p < .05" title="p < .05" /> es que la variable numérica puede dividirse en dos grupos que difieren en su media y que están vinculados con uno de los dos valores del target. Esto sugiere que tal variable es útil para la predicción del target.</p>
+<h2 id="53-combinación-variable-categórica-con-variable-categórica">5.3. Combinación variable categórica con variable categórica</h2>
+<p>En este proceso se uso el método <img src="https://latex.codecogs.com/svg.latex?\chi^{2}" title="\chi^{2}" /> el cual se seleccionan las variables con los mayores resultados en el test estadistico chi-squared que determina la dependencia entre variables y el objetivo; de esta manera se podrá validar si son independiente e irrelevantes para la clasificación.</p>
+<p>En este ejemplo se obtuvieron aquellas variables cuyo valor p fuera mayor a 0.05 se desestimarían, ya que su significado estadístico es muy bajo y es irrelevante para el entrenamiento del modelo.</p>
+<pre><code class="language-python"><div>chi_scores = chi2(x,y)
+p_values = pd.Series(chi_scores[<span class="hljs-number">1</span>], index = x.columns)
+droped_chi2_cols = p_values[p_values &gt; <span class="hljs-number">0.05</span>].index.to_list()
+</div></code></pre>
+<h1 id="6-generación-de-modelos">6. Generación de modelos</h1>
+<p>La generación de modelos se basó en el entrenamiento de <strong>Random Forest</strong> y <strong>Logistic Regression</strong> para cada mes definido en un rango de fecha mínima y fecha máxima de la variable <strong>MES_COTIZACION</strong>. La información de entrenamiento <em>train</em> se define como toda aquella que sea anterior a la fecha seleccionada. La información de prueba <em>test</em> se define como la misma que se esté seleccionando:</p>
+<pre><code class="language-python"><div><span class="hljs-keyword">for</span> month <span class="hljs-keyword">in</span> dt_range:   
+    train_temp = train[train.MES_COTIZACION &lt;= month]
+    test_temp  = test[test.MES_COTIZACION == month]
+</div></code></pre>
+<p>Teniendo el subset de datos de entrenamiento, se procesaran en una etapa llamada <em><strong>preprocess</strong></em> definida en un <em>Pipeline</em>, el cual se divide en 3 etapas:</p>
+<pre><code class="language-python"><div>preprocessor = ColumnTransformer(
+    transformers=[
+        (<span class="hljs-string">"feature_select"</span>, feature_selector, droped_cols),
+        (<span class="hljs-string">"cat"</span>, categorical_transformer, final_cat_cols),
+        (<span class="hljs-string">'num'</span>, numeric_transformer, final_num_cols)
+])
+</div></code></pre>
+<ul>
+<li><em><strong>feature_select</strong></em>: Desestimación de variables que fueron designadas por la selección de variables como &quot;poco informativas&quot; para el entramiento del modelo. Se usaron cuatro métodos estadísticos:
+<ul>
+<li>Desestimación por porcentaje de nulos.</li>
+<li>Desestimación por Coeficiones de Correlación de Pearson.</li>
+<li>Desestimación por T-Test.</li>
+<li>Desestimación por Chi^2.</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-python"><div>dropped_cols = dropped_null_cols + dropped_corr_cols + dropped_ttest_cols + dropped_chi2_cols
+
+feature_selector = Pipeline(steps = [
+    (<span class="hljs-string">"dropper"</span>, MultiColumnDropper(dropped_cols))
+])
+</div></code></pre>
+<ul>
+<li><em><strong>numeric_transformer</strong></em>: Adpatación y ajuste de datos numéricos en dos etapas:
+<ul>
+<li>Imputación de la mediana a registros nulos.</li>
+<li>Estandariazción de datos removiendo la media y escalando a la variación unitaria.</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-python"><div>numeric_transformer = Pipeline(steps=[
+    (<span class="hljs-string">'imputer'</span>, SimpleImputer(strategy=<span class="hljs-string">'median'</span>)),
+    (<span class="hljs-string">'scaler'</span>, StandardScaler())
+])
+</div></code></pre>
+<ul>
+<li><em><strong>categorical_transformer</strong></em>: Ajuste y codificación de datos categóricos en dos etapas:
+<ul>
+<li>Imputación de un valor constante <em>missing</em> a registros nulos.</li>
+<li>Aplicar <em>OneHotEncoder</em> para cada categoría.</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-python"><div>categorical_transformer = Pipeline(steps=[
+    (<span class="hljs-string">'imputer'</span>, SimpleImputer(strategy=<span class="hljs-string">'constant'</span>, fill_value=<span class="hljs-string">'missing'</span>)),
+    (<span class="hljs-string">'onehot'</span>, OneHotEncoder(handle_unknown = <span class="hljs-string">"ignore"</span>, sparse = <span class="hljs-literal">False</span>))
+])
+</div></code></pre>
+<h1 id="7-entrenamiento-y-selección-de-modelos">7. Entrenamiento y selección de modelos</h1>
+<p>Realizar pruebas con los modelos usando los mismos datos con los que fueron entrenados conduce a un sobreajuste de los parámetros, lo cual limita la aplicabilidad del algoritmo a datos nuevos.</p>
+<p>Para evaluar de manera realista los resultados del modelo aplicado a datos nuevos y evitar el sobreajuste se usó la técnica de validación cruzada de <img src="https://latex.codecogs.com/svg.latex?k" title="k" /> dobleces. Este método crequiere la división de la base de datos de entrenamiento en <img src="https://latex.codecogs.com/svg.latex?k" title="k" /> bases más pequeñas. El procedimiento consiste en realizar para cada doblez los pasos (1) entrenar el modelo usando <img src="https://latex.codecogs.com/svg.latex?k-1" title="k-1" /> de los dobleces y (2) validar el modelo resultante usando el resto de los datos no contenidos en el set de datos de entrenamiento. Esto permite el cálculo de métricas de rendimiento como la accuracy, Área bajo la curva ROC o score F1, la cual se expresa en la media de los valores calculados durante el ciclo de validaciones.</p>
+<p>Con el objetivo de identificar los hiperparámetros óptimos para los algoritmos de aprendizaje, se utilizó la búsqueda por rejilla (grid search), la cual consiste en una búsqueda exhaustiva dentro de un subconjunto del espacio de hiperparámetros.</p>
+<p>Para el modelo de regresión logística  los hiperparámetros a evaluar fueron:</p>
+<ul>
+<li>Valores C (el inverso del nivel de regularización, donde valores menores especifican una regularización mayor) de <code>[0.01, 0.001, 0.1, 1.0]</code></li>
+</ul>
+<p>Para el modelo de bosque aleatorio los hiperparámetros a evaluar fueron:</p>
+<ul>
+<li><code> [30, 50]</code> como número de árboles de decisión por bosque para el algoritmo de random forest.</li>
+</ul>
+<p>Para el modelo de red neuronal <em>fully connected</em> los hiperparámetros a evaluar fueron:</p>
+<ul>
+<li><code> [ ]</code> FALTA</li>
+</ul>
+<p>La selección de parametros para cada modelo fue de [X = FALTA, ] para regresión logística, [50 arboles de decisión] para bosque aleatorio y [FALTA ] para la red neuronal.</p>
+<p>Como métrica para seleccionar el mejor modelo se utilizó el Área bajo la curva ROC, en la cual el modelo de regresión logísitca obtuvo un mejor puntaje (AUC ROC = FALTA).</p>
+<h1 id="8-evaluación-de-modelo">8. Evaluación de modelo</h1>
+<p>El modelo de regresión logística fue evaluado de manera olística sobre datos no observados en ninguna etapa de su entrenamiento con un resultado de AUC = 0.8438</p>
+<p>El desempeño del modelo seleccionado se puede medir de manera alternativa para un treshold dado a través de medidas como el score F1, Precision, Recall, etc. dependiendo de las necesidades del negocio.</p>
+<p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura1.PNG" alt="Figura1"></p>
+<p>La Figura 1 nos muestra el costo-beneficio de la variación de un treshold a través de la visualización de los puntos de la curva ROC, brindando así una herramienta comparativa de fácil interpretación.</p>
+<p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura2.PNG" alt="Figura2"></p>
+<p>En la Figura 2 se observa de manera complementaria el costo-beneficio entre la Precisión y el TPR.</p>
+<p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura3.PNG" alt="Figura3"></p>
+<p>Si se desea conocer el treshold en el cual el costo beneficio de la Figura 2 es más óptimo, se pueden comparar los distintos tresholds a través de la gráfica del score F1 (Figura 3), la cual revela que el treshold más óptimo (de mayor valor F1) es el de 0.34.</p>
+<p>Para dicho treshold, cualquier observación con una probabilidad de ser positivo mayor a 0.34 será categorizada como positiva.</p>
+<p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura4.PNG" alt="Figura4"></p>
+<p>La Figura 4 muestra el desempeño del modelo para un treshold de 0.34 al medir el TPR en función del mes de alta en el que fue dado de alta el cliente, y cuenta con coloración determinada por la precisión, donde la escala de tipo semáforo corresponde a valores rojos para menor precisión y valores verdes para mayor precisión.</p>
+<p>Las 4 variables con mayor importancia en el modelo seleccionado son: <em>CTZSHP_CNTRY2_CD</em>, <em>CTZSHP_CNTRY1_CD</em>, <em>CD_OCUPACION</em> y <em>RES_CNTRY_CD</em>.</p>
+<p><img src="file:///c:\Users\enriq\Documents\GitHub\DataChallenge\images\Figura5.PNG" alt="Figura5"></p>
+<p>La Figura 5 ejemplifica una visualización sugerida para evaluar el impacto que tiene la una variable (en este caso CTZSHP_CNTRY1_CD) sobre el desempeño del modelo. Mayor análisis y conocimiento del negocio se requieren para generar hipótesis al respecto.</p>
+<h1 id="9-conclusión">9. Conclusión</h1>
+<p>Los modelos utilizados presentan un AUC ROC demasiado bajo y un índice de Gini demasiado alto como para ponerlos en producción. Cabe destacar que el análisis de importancia arrojó variables relacionadas con el crédito hipotecario, las cuentas de fondos mutuo, las cuentas compensación por Tiempo de Servicio y el número de operaciones en dólares como los principales predictores de la decisión del cliente. Esto sugiere que el capital acumulado define si el cliente cuenta con el respaldo económico para tomar el riesgo que representan los créditos bancarios.</p>
+<h1 id="10-trabajo-a-futuro">10. Trabajo a futuro</h1>
+<p>Sin duda se podría hacer un trabajo mucho más exhaustivo en la exploración y análisis de los datos, así como la recopilación y agregación de fuentes de información que tengan relación con los datos. Algunos ejemplos para la recopilación de información de otras fuentes puede ser el uso de <strong>web scrapping</strong>, el cual se implemento de manera muy básica, pero podrían agregarse muchos más datos como el nivel socioeconómico y nivel de riesgo basado en su ubicación, valor de la moneda, temporada de alto o bajo gasto económico, información política y económica, etc. Esto puede ayudar bastante a determinar la relación de nueva información con la variable dependiente y mejorar los resultados del entrenamiento del modelo.</p>
+<p>Para una mejora de la exploración de los datos para el entrenamiento del modelo se podrían implementar técnicas orientadas al <strong>análisis descriptivo y dispersivo</strong> (ANOVA) usando pruebas estadisticas como la desviación estándar y/o el rango intercuartil mostrados en gráficas para conocer más a fondo la relación, patrones y variación de los datos. Existe una herramienta llamada <strong>Monte Carlo Simulation</strong> la cual calcula el efecto de variables impredecibles en un factor específico. Otro ejemplo es el <strong>Análisis Discriminatorio Lineal</strong> (LDA) que utiliza variables continuas independientes y categóricas dependientes, el cual podría ser útil para obtener una combinación lineal de variables que logren caracterizar las clases y poder reducir algunas la dimensionalidad del data set dado que haciendo el <em>OneHotEncoding</em> de las categoricas, el data set crece bastante en columnas.</p>
+<p>En cuanto a una mejora de la estructura del código se podría hacer modular por funciones y escalable a la agregación y adaptación de nuevas herramientas.</p>
+<h1 id="11-contacto">11. Contacto</h1>
+<p>Julio Sánchez González - <a href="mailto:julio.sanchez.gonzalez@bbva.com">julio.sanchez.gonzalez@bbva.com</a></p>
+<p>Luis Enrique García Orozco - <a href="mailto:luisenrique.garcia.orozco@bbva.com">luisenrique.garcia.orozco@bbva.com</a></p>
+<p>Uri Eduardo Ramírez Pasos - <a href="mailto:urieduardo.ramirez.contractor@bbva.com">urieduardo.ramirez.contractor@bbva.com</a></p>
+
+    </body>
+    </html>
