@@ -26,6 +26,13 @@ from sklearn.pipeline import Pipeline
 import datetime
 from dateutil.relativedelta import relativedelta as rd
 
+import tensorflow as tf
+from tensorflow import keras
+from keras.regularizers import l2
+from sklearn import datasets
+from tensorflow.keras import layers
+from keras.wrappers.scikit_learn import KerasClassifier
+
 class MultiColumnDropper():
     def __init__(self,columns = None):
         self.columns = columns # array of column names to encode

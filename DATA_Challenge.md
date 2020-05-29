@@ -1,4 +1,4 @@
-# Data Challenge Mayo 2020
+# Data Challenge 2
 
 ## Descripción de proyecto y objetivo
 
@@ -8,11 +8,11 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
 ### Cararísticas técnicas
 
-#### Lenguaje de programación
+#### Lenguajes de programación
 
  - [Python 3.7](https://www.python.org/)
 
-#### Librerías
+#### Librerías de Python:
 
 - [Pandas 1.0.3](https://pandas.pydata.org/)
 
@@ -22,52 +22,38 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
     Uso para modificación, identificación y manejo de los datos.
 
-- [SciPy 1.4](https://docs.scipy.org/)
+- [Pyspark FALTA VERSION](FALTA LINK)
+
+    Uso para obtención de datos estadísticos *T-Test* y prubeas de normalidad *Shapiro-Wilk*.
+    Uso para selección de variables; procesamiento, imputación y trasformación de datos; entranmiento y selcción del modelo. (*Random Forest*, *Logistic Regression*)
+
+- [functools FALTA VERSION](FALTA LINK)
 
     Uso para obtención de datos estadísticos *T-Test* y prubeas de normalidad *Shapiro-Wilk*.
 
-- [SciKit-Learn 0.22](https://scikit-learn.org/stable/)
+- [iterools FALTA VERSION](FALTA LINK)
 
-    Uso para selección de variables; procesamiento, imputación y trasformación de datos; entranmiento y selcción del modelo. (*Random Forest*, *Logistic Regression*)
-
-- [MatPlotLib 3.2.1](https://matplotlib.org/)
-
-    Uso para visualización de los datos, su comportamiento y su correlación.
-
-- [Seaborn 0.10](https://seaborn.pydata.org/)
-
-    Uso para visualización de los datos en un mapa de calor.
-
-
-#### IDE de ejecución
+#### IDE de ejecución de código
 
 - [Anaconda - Spyder 4.0](https://www.spyder-ide.org/)
+
+#### Software de Visualización de datos
+
+- [Power BI](FALTA LINK)
 
 ## Descripción de datos
 
 Los datos empleados se encuentran descritos a profundidad en el archivo situado en la ruta:
 
 ``` 
-\DataChallenge\data\"Diccionario Datos Challenge.xlsx"
+\SDATOOL-31455\Modelos\"Data Challenge - Caso 2"\"diccionario_data.xlsx"
 ```
 
 Los datos empleados se encuentran en la ruta:
 
 ``` 
-\DataChallenge\data\"
+\SDATOOL-31455\Modelos\"Data Challenge - Caso 2"\"diccionario_data.xlsx"
 ```
-
-Conteniendo cada uno:
-
-**Fichero 1** es la Base de cotizaciones, tiene una granularidad a nivel -mes de cotización / código de solicitud / código de cliente-.
-
-**Fichero 2** es la Base sociodemográfica + Digital, tiene una granularidad a nivel -mes de cotización / código de cliente-. 
-
-**Fichero 3** es la Base de productos BBVA, tiene una granularidad a nivel -mes de cotización / mes de registro de datos / código de cliente-.
-
-**Fichero 4** es la Base de saldos en el Sistema Financiero, tiene una granularidad a nivel -mes de cotización / mes de registro de datos / código de cliente / código de entidad bancaria-.
-
-**Fichero 5** es la Base de consumos con tarjeta, tiene una granularidad a nivel -mes de cotización / mes de registro de datos / código de cliente-.
 
 ## Carga y unión de datos
 
@@ -168,22 +154,46 @@ categorical_transformer = Pipeline(steps=[
 ])
 ```
 
-## Evaluación del modelo
+## Entrenamiento y selección de modelos
 
-### Cross-validation y Param_grid
+Realizar pruebas con los modelos usando los mismos datos con los que fueron entrenados conduce a un sobreajuste de los parámetros, lo cual limita la aplicabilidad del algoritmo a datos nuevos.  
 
-Realizar pruebas con los modelos usando los mismos datos con los que fueron entrenados conduce a un sobreajuste de los parámetros, lo cual limita la aplicabilidad del algoritmo a datos nuevos.  Para evitar el sobreajuste se usó la validación cruzada de <img src="https://latex.codecogs.com/svg.latex?k" title="k" /> dobleces. Este método crequiere la división de la base de datos de entrenamiento en <img src="https://latex.codecogs.com/svg.latex?k" title="k" /> bases más pequeñas. El procedimiento consiste en (1) entrenar el modelo usando <img src="https://latex.codecogs.com/svg.latex?k-1" title="k-1" /> de los dobleces y (2) validar el modelo resultante usando el resto de los datos. Esto permite el cálculo de métricas de rendimiento como la accuracy, la cual se expresa en la media de los valores calculados durante el ciclo de validaciones. 
+Para evaluar de manera realista los resultados del modelo aplicado a datos nuevos y evitar el sobreajuste se usó la técnica de validación cruzada de <img src="https://latex.codecogs.com/svg.latex?k" title="k" /> dobleces. Este método crequiere la división de la base de datos de entrenamiento en <img src="https://latex.codecogs.com/svg.latex?k" title="k" /> bases más pequeñas. El procedimiento consiste en realizar para cada doblez los pasos (1) entrenar el modelo usando <img src="https://latex.codecogs.com/svg.latex?k-1" title="k-1" /> de los dobleces y (2) validar el modelo resultante usando el resto de los datos no contenidos en el set de datos de entrenamiento. Esto permite el cálculo de métricas de rendimiento como la accuracy, Área bajo la curva ROC o score F1, la cual se expresa en la media de los valores calculados durante el ciclo de validaciones.
 
-Con el objetivo de identificar los hiperparámetros óptimos para los algoritmos de aprendizage, se utilizó la búsqueda por rejilla (grid search), la cual consiste en una búsqueda exhaustiva dentro de un subconjunto del espacio de hiperparámetros: valores C (el inverso del nivel de regularización, donde valores menores especifican una regularización mayor) de ```[0.01, 0.001, 0.1, 1.0]``` para la regresión logística y ``` [150, 200]``` como número de árboles de decisión por bosque para el algoritmo de random forest.     
+Con el objetivo de identificar los hiperparámetros óptimos para los algoritmos de aprendizaje, se utilizó la búsqueda por rejilla (grid search), la cual consiste en una búsqueda exhaustiva dentro de un subconjunto del espacio de hiperparámetros. 
 
-Alcanzamos una accuracy con probabilidad de 50% con un umbral de 0.63692 y una pérdida logarítmica de 0.6420. 
+Para el modelo de regresión logística  los hiperparámetros a evaluar fueron: 
+* Valores C (el inverso del nivel de regularización, donde valores menores especifican una regularización mayor) de ```[0.01, 0.001, 0.1, 1.0]``` 
 
+Para el modelo de bosque aleatorio los hiperparámetros a evaluar fueron: 
+* ``` [30, 50]``` como número de árboles de decisión por bosque para el algoritmo de random forest.     
 
-### Métricas alternativas de evaluación
+Para el modelo de red neuronal *fully connected* los hiperparámetros a evaluar fueron: 
+* ``` [ ]``` FALTA
 
-El desempeño del modelo seleccionado se puede medir de manera alternativa a través de medidas como el area bajo la curva ROC (conocida común mente como AUC ROC) o el índice de Gini, que es equivalente a <img src="https://latex.codecogs.com/svg.latex?(2 * AUC ROC) - 1" title="(2 * AUC ROC) - 1" />.
+La selección de parametros para cada modelo fue de [X = FALTA, ] para regresión logística, [50 arboles de decisión] para bosque aleatorio y [FALTA ] para la red neuronal.
 
-El mejor modelo reportó una AUC ROC de 0.6858, y por lo tanto un índice de Gini de 0.3716
+Como métrica para seleccionar el mejor modelo se utilizó el Área bajo la curva ROC, en la cual el modelo de regresión logísitca obtuvo un mejor puntaje (AUC ROC = FALTA).
+
+## Evaluación de modelo
+
+El modelo de regresión logística fue evaluado de manera olística sobre datos no observados en ninguna etapa de su entrenamiento con un resultado de AUC = 0.8438
+
+El desempeño del modelo seleccionado se puede medir de manera alternativa para un treshold dado a través de medidas como el score F1, Precision, Recall, etc. dependiendo de las necesidades del negocio. 
+
+La Figura 1 nos muestra el costo-beneficio de la variación de un treshold a través de la visualización de los puntos de la curva ROC, brindando así una herramienta comparativa de fácil interpretación.
+
+En la Figura 2 se observa de manera complementaria el costo-beneficio entre la Precisión y el TPR.
+
+Si se desea conocer el treshold en el cual el costo beneficio de la Figura 2 es más óptimo, se pueden comparar los distintos tresholds a través de la gráfica del score F1 (Figura 3), la cual revela que el treshold más óptimo (de mayor valor F1) es el de 0.34.
+
+Para dicho treshold, cualquier observación con una probabilidad de ser positivo mayor a 0.34 será categorizada como positiva.
+
+La Figura 4 muestra el desempeño del modelo para un treshold de 0.34 al medir el TPR en función del mes de alta en el que fue dado de alta el cliente, y cuenta con coloración determinada por la precisión, donde la escala de tipo semáforo corresponde a valores rojos para menor precisión y valores verdes para mayor precisión. 
+
+Las 4 variables con mayor importancia en el modelo seleccionado son: *CTZSHP_CNTRY2_CD*, *CTZSHP_CNTRY1_CD*, *CD_OCUPACION* y *RES_CNTRY_CD*.
+
+La Figura 5 ejemplifica una visualización sugerida para evaluar el impacto que tiene la una variable (en este caso CTZSHP_CNTRY1_CD) sobre el desempeño del modelo. Mayor análisis y conocimiento del negocio se requieren para generar hipótesis al respecto.
 
 ## Conclusión
 
