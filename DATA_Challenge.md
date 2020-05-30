@@ -19,6 +19,10 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
 ## 2.2. Librerías de Python:
 
+- [Tensorflow FALTA VERSION][FALTA LINK]
+
+    FALTA PARA QUE SIRVIÓ
+
 - [Pandas 1.0.3](https://pandas.pydata.org/)
 
     Uso para lectura y manipulación de los datos como objetos **DataFrame**.
@@ -27,9 +31,10 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
     Uso para modificación, identificación y manejo de los datos.
 
-- [Pyspark FALTA VERSION](FALTA LINK)
+- [PySpark FALTA VERSION](FALTA LINK)
 
     Uso para obtención de datos estadísticos *T-Test* y prubeas de normalidad *Shapiro-Wilk*.
+
     Uso para selección de variables; procesamiento, imputación y trasformación de datos; entranmiento y selcción del modelo. (*Random Forest*, *Logistic Regression*)
 
 - [functools FALTA VERSION](FALTA LINK)
@@ -38,9 +43,11 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
 - [iterools FALTA VERSION](FALTA LINK)
 
+    FALTA PARA QUE SIRVIÓ
+
 ## 2.3. IDE de ejecución de código
 
-- [Anaconda - Spyder 4.0](https://www.spyder-ide.org/)
+- [COLAB](FALTA LINK)
 
 ## 2.4. Software de Visualización de datos
 
@@ -49,12 +56,6 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 # 3. Descripción de datos
 
 Los datos empleados se encuentran descritos a profundidad en el archivo situado en la ruta:
-
-``` 
-\SDATOOL-31455\Modelos\"Data Challenge - Caso 2"\"diccionario_data.xlsx"
-```
-
-Los datos empleados se encuentran en la ruta:
 
 ``` 
 \SDATOOL-31455\Modelos\"Data Challenge - Caso 2"\"diccionario_data.xlsx"
@@ -173,12 +174,13 @@ Para el modelo de regresión logística  los hiperparámetros a evaluar fueron:
 Para el modelo de bosque aleatorio los hiperparámetros a evaluar fueron: 
 * ``` [30, 50]``` como número de árboles de decisión por bosque para el algoritmo de random forest.     
 
-Para el modelo de red neuronal *fully connected* los hiperparámetros a evaluar fueron: 
+Para el modelo de red neuronal *fully connected* los hiperparámetros a evaluar fueron:
+
 * ``` [ ]``` FALTA
 
-La selección de parametros para cada modelo fue de [X = FALTA, ] para regresión logística, [50 arboles de decisión] para bosque aleatorio y [FALTA ] para la red neuronal.
+La selección de parametros para cada modelo fue de [FALTA] para regresión logística, [50 arboles de decisión] para bosque aleatorio y [FALTA] para la red neuronal.
 
-Como métrica para seleccionar el mejor modelo se utilizó el Área bajo la curva ROC, en la cual el modelo de regresión logísitca obtuvo un mejor puntaje (AUC ROC = FALTA).
+Como métrica para seleccionar el mejor modelo se utilizó el Área bajo la curva ROC, en la cual el modelo de regresión logísitca obtuvo un mejor puntaje (AUC ROC = 0.8639).
 
 # 8. Evaluación de modelo
 
@@ -219,7 +221,7 @@ Un Dashboard interactivo con las visualizaciones mencionadas y complementarias s
 
 # 9. Conclusión
 
-Los modelos utilizados presentan un AUC ROC demasiado bajo y un índice de Gini demasiado alto como para ponerlos en producción. Cabe destacar que el análisis de importancia arrojó variables relacionadas con el crédito hipotecario, las cuentas de fondos mutuo, las cuentas compensación por Tiempo de Servicio y el número de operaciones en dólares como los principales predictores de la decisión del cliente. Esto sugiere que el capital acumulado define si el cliente cuenta con el respaldo económico para tomar el riesgo que representan los créditos bancarios.
+FALTA
 
 
 # 10. Trabajo a futuro
