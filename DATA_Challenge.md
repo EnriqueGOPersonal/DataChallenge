@@ -6,8 +6,9 @@ Table of contents (up to date)
 - [2. Cararísticas técnicas](#2-cararísticas-técnicas)
   - [2.1. Lenguajes de programación](#21-lenguajes-de-programación)
   - [2.2. Librerías de Python:](#22-librerías-de-python)
-  - [2.3. IDE de ejecución de código](#23-ide-de-ejecución-de-código)
-  - [2.4. Software de Visualización de datos](#24-software-de-visualización-de-datos)
+  - [2.3. Framework de computación en clúster](#23-framework-de-computación-en-clúster)
+  - [2.4. IDE de ejecución de código](#24-ide-de-ejecución-de-código)
+  - [2.5. Software de Visualización de datos](#25-software-de-visualización-de-datos)
 - [3. Descripción de datos](#3-descripción-de-datos)
 - [4. Carga, limpieza y división de datos](#4-carga-limpieza-y-división-de-datos)
   - [4.1. Variables Categóricas](#41-variables-categóricas)
@@ -38,7 +39,7 @@ En este proyecto utilizamos la riqueza informacional que BBVA nos proporcionó s
 
 ## 2.2. Librerías de Python:
 
-- [Tensorflow 2.2.0][https://www.tensorflow.org]
+- [Tensorflow 2.2.0](https://www.tensorflow.org)
 
     Uso para construcción de redes neuronales.
 
@@ -62,13 +63,17 @@ En este proyecto utilizamos la riqueza informacional que BBVA nos proporcionó s
 
 - [iterools 8.3.0](https://docs.python.org/2/library/itertools.html)
 
-    Uso para realizar un proucto de 2 parámetros para el entrenamiento tipo *GridSearch* de la red neuronal.
+    Uso para realizar un producto de 2 parámetros para el entrenamiento tipo *GridSearch* de la red neuronal.
 
-## 2.3. IDE de ejecución de código
+## 2.3. Framework de computación en clúster
+
+- [Apache Spark 2.4.1](https://spark.apache.org)
+
+## 2.4. IDE de ejecución de código
 
 - [COLAB](https://colab.research.google.com/notebooks/intro.ipynb)
 
-## 2.4. Software de Visualización de datos
+## 2.5. Software de Visualización de datos
 
 - [Power BI](https://powerbi.microsoft.com/)
 
@@ -222,7 +227,7 @@ En el modelo descrito en el presente documento, se sugieren visualizaciones y m�
 
 # 10. Trabajo a futuro
 
-Sin duda se podría hacer un trabajo mucho más exhaustivo en la exploración y análisis de los datos, así como la recopilación y agregación de fuentes de información que tengan relación con los datos. Algunos ejemplos para la recopilación de información de otras fuentes puede ser el uso de **web scrapping**, el cual se implemento de manera muy básica, pero podrían agregarse muchos más datos como el nivel socioeconómico y nivel de riesgo basado en su ubicación, valor de la moneda, temporada de alto o bajo gasto económico, información política y económica, etc. Esto puede ayudar bastante a determinar la relación de nueva información con la variable dependiente y mejorar los resultados del entrenamiento del modelo.
+Sin duda se podría hacer un trabajo mucho más exhaustivo en la exploración y análisis de los datos, así como la recopilación y agregación de fuentes de información que tengan relación con los datos. Algunos ejemplos para la recopilación de información de otras fuentes puede ser el uso de **web scrapping**, el cual se implementó de manera muy básica, pero podrían agregarse muchos más datos como el nivel socioeconómico y nivel de riesgo basado en su ubicación, valor de la moneda, temporada de alto o bajo gasto económico, información política y económica, etc. Esto puede ayudar bastante a determinar la relación de nueva información con la variable dependiente y mejorar los resultados del entrenamiento del modelo.
 
 Para una mejora de la exploración de los datos para el entrenamiento del modelo se podrían implementar técnicas orientadas al **análisis descriptivo y dispersivo** (ANOVA) usando pruebas estadisticas como la desviación estándar y/o el rango intercuartil mostrados en gráficas para conocer más a fondo la relación, patrones y variación de los datos. Existe una herramienta llamada **Monte Carlo Simulation** la cual calcula el efecto de variables impredecibles en un factor específico. Otro ejemplo es el **Análisis Discriminatorio Lineal** (LDA) que utiliza variables continuas independientes y categóricas dependientes, el cual podría ser útil para obtener una combinación lineal de variables que logren caracterizar las clases y poder reducir algunas la dimensionalidad del data set dado que haciendo el *OneHotEncoding* de las categoricas, el data set crece bastante en columnas.
 
