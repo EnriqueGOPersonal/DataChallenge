@@ -31,27 +31,27 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
     Uso para modificación, identificación y manejo de los datos.
 
-- [PySpark FALTA VERSION](FALTA LINK)
+- [PySpark 2.4.5](https://spark.apache.org/docs/latest/api/python/index.html)
 
     Uso para obtención de datos estadísticos *T-Test* y prubeas de normalidad *Shapiro-Wilk*.
 
     Uso para selección de variables; procesamiento, imputación y trasformación de datos; entranmiento y selcción del modelo. (*Random Forest*, *Logistic Regression*)
 
-- [functools FALTA VERSION](FALTA LINK)
+- [functools 3.8](https://docs.python.org/3/library/functools.html)
 
-    Uso para obtención de datos estadísticos *T-Test* y prubeas de normalidad *Shapiro-Wilk*.
+    Uso para la unión de más de 2 DataFrames con la función *reduce*.
 
-- [iterools FALTA VERSION](FALTA LINK)
+- [iterools 8.3.0](https://docs.python.org/2/library/itertools.html)
 
-    FALTA PARA QUE SIRVIÓ
+    Uso para realizar un proucto de 2 parámetros para el entrenamiento tipo *GridSearch* de la red neuronal.
 
 ## 2.3. IDE de ejecución de código
 
-- [COLAB](FALTA LINK)
+- [COLAB](https://colab.research.google.com/notebooks/intro.ipynb)
 
 ## 2.4. Software de Visualización de datos
 
-- [Power BI](FALTA LINK)
+- [Power BI](https://powerbi.microsoft.com/)
 
 # 3. Descripción de datos
 
@@ -111,53 +111,38 @@ droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
 
 # 6. Generación de modelos
 
-La generación de modelos se basó en el entrenamiento de **Random Forest** y **Logistic Regression** para cada mes definido en un rango de fecha mínima y fecha máxima de la variable **MES_COTIZACION**. La información de entrenamiento *train* se define como toda aquella que sea anterior a la fecha seleccionada. La información de prueba *test* se define como la misma que se esté seleccionando:
+La generación de modelos se basó en el entrenamiento de **Random Forest**, **Logistic Regression** y **Neuronal Network** para un 80% del Dataset y un 20% para test. La información de entrenamiento fue sometida a cierto procesamiento para terminar obteniendo un Dataset más limpio, con datos que ofrencen más información al modelo y menos redundantes.
+A este proceso le llamaremos ***preprocessor*** el cual consta de 4 etapas fundamentales para la transformación de los datos que se añadirán a un arreglo llamado *stages* que funcionará como parámetro para el *Pipeline* de transformación:
+
+- ***Imputer***: Se imputaros valores de la mediana en datos vacíos para variables numéricas y la constante "*missing*" para variables categóricas.
 ``` python
-for month in dt_range:   
-    train_temp = train[train.MES_COTIZACION <= month]
-    test_temp  = test[test.MES_COTIZACION == month]
-```
-Teniendo el subset de datos de entrenamiento, se procesaran en una etapa llamada ***preprocess*** definida en un *Pipeline*, el cual se divide en 3 etapas:
-``` python
-preprocessor = ColumnTransformer(
-    transformers=[
-        ("feature_select", feature_selector, droped_cols),
-        ("cat", categorical_transformer, final_cat_cols),
-        ('num', numeric_transformer, final_num_cols)
-])
+cat_imputer = CategoricImputer(column_list = categoric_columns)
+stages += [cat_imputer]
+
+num_imputer = Imputer(inputCols= numeric_columns, outputCols=numeric_columns).setStrategy("median")
+stages += [num_imputer]
 ```
 
-- ***feature_select***: Desestimación de variables que fueron designadas por la selección de variables como "poco informativas" para el entramiento del modelo. Se usaron cuatro métodos estadísticos:
-    * Desestimación por porcentaje de nulos.
-    * Desestimación por Coeficiones de Correlación de Pearson.
-    * Desestimación por T-Test.
-    * Desestimación por Chi^2.
+- ***StandardScaler***: Estandariazción de datos de variables numéricas removiendo la media y escalando a la variación unitaria.
 ``` python
-dropped_cols = dropped_null_cols + dropped_corr_cols + dropped_ttest_cols + dropped_chi2_cols
-
-feature_selector = Pipeline(steps = [
-    ("dropper", MultiColumnDropper(dropped_cols))
-])
+scaler = StandardScaler(inputCol = "numeric_columns", outputCol = "numeric_columns_scaled")
+stages += [scaler]
 ```
 
-- ***numeric_transformer***: Adpatación y ajuste de datos numéricos en dos etapas:
-    * Imputación de la mediana a registros nulos.
-    * Estandariazción de datos removiendo la media y escalando a la variación unitaria.
+- ***StringIndexer y OneHotEncoder***: Asignación de índices para cada categoría y aplicación del concepto de *OneHotEncoder* para varaibles categóricas.
 ``` python
-numeric_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='median')),
-    ('scaler', StandardScaler())
-])
+for c in categoric_columns:
+    stringIndexer = StringIndexer(inputCol = c, outputCol= c + "_index", handleInvalid= "keep")
+    stages += [stringIndexer]
+
+encoder = OneHotEncoderEstimator(inputCols= cat_cols_index, outputCols = cat_cols_enc)
+stages += [encoder]
 ```
 
-- ***categorical_transformer***: Ajuste y codificación de datos categóricos en dos etapas:
-    * Imputación de un valor constante *missing* a registros nulos.
-    * Aplicar *OneHotEncoder* para cada categoría.
+- ***VectorAssembler***: Vectorización de todas las variables resultantes de una sola columna llamada *features*.
 ``` python
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-    ('onehot', OneHotEncoder(handle_unknown = "ignore", sparse = False))
-])
+assembler = VectorAssembler(inputCols = features, outputCol= "features")
+stages += [assembler]
 ```
 
 # 7. Entrenamiento y selección de modelos
@@ -175,10 +160,10 @@ Para el modelo de bosque aleatorio los hiperparámetros a evaluar fueron:
 * ``` [30, 50]``` como número de árboles de decisión por bosque para el algoritmo de random forest.     
 
 Para el modelo de red neuronal *fully connected* los hiperparámetros a evaluar fueron:
+* ``` [0.0, 0.1, 0.2]``` como la tasa de probabilidad de entrenamiento de un nodo de la Red Nueronal, conocido como *Dropout Rate*.
+* ``` [0.1, 0.01, 0.001]``` como la tasa de regularización tipo *Ridge* conocidoc como **L2**.
 
-* ``` [ ]``` FALTA
-
-La selección de parametros para cada modelo fue de [FALTA] para regresión logística, [50 arboles de decisión] para bosque aleatorio y [FALTA] para la red neuronal.
+La selección de parametros para cada modelo fue de [0.001 para el valor C] para regresión logística, [50 arboles de decisión] para bosque aleatorio y [0.0 para Dropout Rate y 0.0 para L2] para la red neuronal.
 
 Como métrica para seleccionar el mejor modelo se utilizó el Área bajo la curva ROC, en la cual el modelo de regresión logísitca obtuvo un mejor puntaje (AUC ROC = 0.8639).
 
