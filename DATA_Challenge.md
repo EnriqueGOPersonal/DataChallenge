@@ -9,7 +9,7 @@ Table of contents (up to date)
   - [2.3. IDE de ejecución de código](#23-ide-de-ejecución-de-código)
   - [2.4. Software de Visualización de datos](#24-software-de-visualización-de-datos)
 - [3. Descripción de datos](#3-descripción-de-datos)
-- [4. Carga y unión de datos](#4-carga-y-unión-de-datos)
+- [4. Carga, limpieza y división de datos](#4-carga-limpieza-y-división-de-datos)
   - [4.1. Variables Categóricas](#41-variables-categóricas)
   - [4.2. Variables Numéricas](#42-variables-numéricas)
   - [4.3. Variable Dependiente (Categórica):](#43-variable-dependiente-categórica)
@@ -26,9 +26,9 @@ Table of contents (up to date)
 
 # 1. Descripción de proyecto y objetivo
 
-Los créditos que ofrecen los bancos varían ampliamente por tasa, importe y plazo. Para incrementar el rendemiento de préstamos crediticios, los bancos deben identificar qué condiciones bancarias y demográficas incrementan la probabilidad de que el cliente acepte una oferta de crédito. 
+La prevención de lavado de dinero conlleva la investigación exhaustiva de casos sospechosos por parte de especialistas. Para reducir la carga laboral y aumentar la proporción de casos sospechosos que finalmente resulten en una dictaminación positiva, los bancos deben identificar qué condiciones bancarias y demográficas incrementan la probabilidad de que el cliente haya cometido blanqueo de capitales. 
 
-En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona sobre clientes y sus transacciones para explotarla a través de modelos de clasificación de Machine Learning que ayuden a identificar las condiciones de préstamo bajo las que un cliente aceptará una oferta crediticia. 
+En este proyecto utilizamos la riqueza informacional que BBVA nos proporcionó sobre clientes y sus transacciones para explotarla a través de modelos de clasificación de Machine Learning que ayuden a identificar las variables más estrechamente asociadas con el lavado de dinero. 
 
 # 2. Cararísticas técnicas
 
@@ -38,9 +38,9 @@ En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona 
 
 ## 2.2. Librerías de Python:
 
-- [Tensorflow FALTA VERSION][FALTA LINK]
+- [Tensorflow 2.2.0][https://www.tensorflow.org]
 
-    FALTA PARA QUE SIRVIÓ
+    Uso para construcción de redes neuronales.
 
 - [Pandas 1.0.3](https://pandas.pydata.org/)
 
@@ -80,24 +80,17 @@ Los datos empleados se encuentran descritos a profundidad en el archivo situado 
 \SDATOOL-31455\Modelos\"Data Challenge - Caso 2"\"diccionario_data.xlsx"
 ```
 
-# 4. Carga y unión de datos
+**BASEMODELO.csv** contiene registros de clientes que fueron evaluados para hacer la dictaminación de lavado de dinero. Incluye información demográfica, información bancaria del cliente, así como detalles de transacciones bancarias (montos y provenencias/destinos).
 
-Los datos de las tablas descritas en la sección Descripción de datos fueron unidos en una tabla 
-de granularidad - mes de cotización / código de cliente.
+# 4. Carga, limpieza y división de datos
 
-En caso de que existieran registros repetidos para la combinación -mes de cotización /código de cliente- se generaron distintos tipos de agregaciones de acuerdo a el tipo de variable.
+La base de datos fue sometida al siguiente preprocesamiento. Registros que para el feature EDAD presentaran un valor negativo o igual o mayor a 100, se les imputó el valor nulo. Filas duplicadas fueron removidas, así como registros que no tuvieran el campo de identificación de cliente, CUST_INTRL_ID, informado. Para reducir el número de categorías del feature actividad económica (CD_ACT_GIRO, 1102 categorías), todos los registros con un código de actividad económica que figure menos de 1000 veces, fueron imputados con el valor "Otros". Otras features fueron simplemente removidas por tener demasiadas categorías (p. ej., CD_SUC_ALTA_CTE, con 5576 categorías)
 
-## 4.1. Variables Categóricas
+Después de reordenar todos los registros de manera aleatoria, un quinto fue reservado para posteriormente evaluar las predicciones producidas por los modelos entrenados con los cuatro quintos restantes.
 
-Conteo de cantidad de registros de cada valor de la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos solicitudes con garantía "A" y una solicitud con garantía "B", se genera una columna llamada "garantia_A_cnt" con valor de 2 y una columna llamada "garantia_B_cnt" con valor de 1. El resto de columnas generadas para el resto de valores observados se mostrarán como 0.
+Para variables categóricas, los valores nulos fueron remplazados por "Missing", para las numéricas por la media.
 
-## 4.2. Variables Numéricas
-
-Promedio, máximo y mínimo de los valores observados para dicha la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos importes uno con valor de 200 y otro con valor de 300, se generarán las columnas "importe_avg" con valor de 250, "importe_max" con valor de 300 e "importe_min" con valor de 200. Cuando no existen observaciones se mostrará 0 en todas las columnas.
-
-## 4.3. Variable Dependiente (Categórica):
-
-Como se desea conservar la variable con valores de 1 y 0 únicamente, cuando aparecen dos solicitudes indistinguibles el mismo mes, se combinan en una sola solicitud que toma el valor de 1 si alguna de las dos fue aceptada y de 0 si ninguna lo fue. Adicionalmente se crea una columna con la cantidad de solicitudes encontradas para la el mismo mes de cotización para un mismo cliente.
+La división de features por tipo de variable está a cargo de la función ```split_columns_by_type```, la cual identifica los tipos numéricos (double, integer, long), categóricos (string), de fecha (timestamp) y en byte (byte).
 
 # 5. Selección de variables
 
@@ -122,11 +115,6 @@ La implicación de un valor <img src="https://latex.codecogs.com/svg.latex?p < .
 En este proceso se uso el método <img src="https://latex.codecogs.com/svg.latex?\chi^{2}" title="\chi^{2}" /> el cual se seleccionan las variables con los mayores resultados en el test estadistico chi-squared que determina la dependencia entre variables y el objetivo; de esta manera se podrá validar si son independiente e irrelevantes para la clasificación.
 
 En este ejemplo se obtuvieron aquellas variables cuyo valor p fuera mayor a 0.05 se desestimarían, ya que su significado estadístico es muy bajo y es irrelevante para el entrenamiento del modelo.
-``` python
-chi_scores = chi2(x,y)
-p_values = pd.Series(chi_scores[1], index = x.columns)
-droped_chi2_cols = p_values[p_values > 0.05].index.to_list()
-```
 
 # 6. Generación de modelos
 
