@@ -184,33 +184,32 @@ Como métrica para seleccionar el mejor modelo se utilizó el Área bajo la curv
 
 # 8. Evaluación de modelo
 
-El modelo de regresión logística fue evaluado de manera olística sobre datos no observados en ninguna etapa de su entrenamiento con un resultado de AUC = 0.8438
+El modelo de regresión logística fue evaluado sobre datos no observados en ninguna etapa de su entrenamiento con un resultado de AUC = 0.8438
 
-El desempeño del modelo seleccionado se puede medir de manera alternativa para un treshold dado a través de medidas como el score F1, Precision, Recall, etc. dependiendo de las necesidades del negocio. 
+Un modelo puede desempeñarse de maneras distintas de acuerdo a el treshold de probabilidad seleccionado (para un clasificador binario se refiere al punto de inflexión de probabilidad en el cual se asinga un valor 1 cuando la probabilidad es mayor y un valor 0 cuando es menor). De la misma manera el desempeño del modelo seleccionado se puede medir de manera alternativa para un treshold dado a través de medidas como el score F1, Precision, Recall, etc. dependiendo de las necesidades del negocio.
 
 ![Figura1](images/Figura1.PNG)
 <center><b>Figura 1.</b> True Positive Ratio en función de False Positive Ratio al variar tresholds de probabilidad.</center>
 
-La Figura 1 nos muestra el costo-beneficio de la variación de un treshold a través de la visualización de los puntos de la curva ROC, brindando así una herramienta comparativa de fácil interpretación.
+La Figura 1 nos muestra el costo-beneficio al intercambiar un aumento en True Positive Ratio por una disminución en False Positive Ratio al variar de un treshold de probabilidad a través de la visualización de los puntos de la curva ROC, brindando así una herramienta comparativa entre tresholds de fácil interpretación.
 
 ![Figura2](images/Figura2.PNG)
 <center><b>Figura 2.</b> True Positive Ratio y Precisión en función del treshold de probabilidad</center>
 
-En la Figura 2 se observa de manera complementaria el costo-beneficio que existe al intercambiar un aumento en el TPR a costa de disminuir la Precisión entre la Precisión y el TPR.
+En la Figura 2 se observa de manera complementaria el costo-beneficio que existe al intercambiar un aumento en el TPR a costa de disminuir la Precisión y viceversa. Para combinar el desempéño de un modelo en cuanto TPR y Precisión y una sola métrica es conveniente calcular el score F1.
+
 
 ![Figura3](images/Figura3.PNG)
 <center><b>Figura 3.</b> Estadístico F1 en función del treshold de probabilidad.</center>
 
-Si se desea conocer el treshold en el cual el costo beneficio de la Figura 2 es más óptimo, se pueden comparar los distintos tresholds a través de la gráfica del score F1 (Figura 3), la cual revela que el treshold más óptimo (de mayor valor F1) es el de 0.34.
-
-Para dicho treshold, cualquier observación con una probabilidad de ser positivo mayor a 0.34 será categorizada como positiva.
+Si se desea conocer el treshold en el cual el costo beneficio de la Figura 2 es más óptimo, se pueden comparar los distintos tresholds a través de la gráfica del score F1 (Figura 3), la cual revela que el treshold más óptimo (de mayor valor F1) es el de 0.34. Para un treshold de 0.34, cualquier observación con una probabilidad de ser positivo mayor a 0.34 será categorizada como positiva.
 
 ![Figura4](images/Figura4.PNG)
 <center><b>Figura 4.</b> Score F1 en función del mes de alta de los clientes. </center>
 
 La Figura 4 muestra el desempeño del modelo para un treshold de 0.34 al medir el score F1 en función del mes de alta en el que fue dado de alta el cliente, se percibe una tendencia a obtener menores scores F1 para clientes con menor antiguedad.
 
-Las 4 variables con mayor importancia en el modelo seleccionado son: *CTZSHP_CNTRY2_CD*, *CTZSHP_CNTRY1_CD*, *CD_OCUPACION* y *RES_CNTRY_CD*.
+Las 4 variables con mayor importancia en el modelo seleccionado son: *CTZSHP_CNTRY2_CD*, *CTZSHP_CNTRY1_CD*, *CD_OCUPACION* y *RES_CNTRY_CD*. Generar visualizaciones del desempeño del modelo en función de las variables de mayor importancia resulta conveniente para generar hipótesis de mejora en el modelo e interpretar causas de dicho desempeño.
 
 ![Figura5](images/Figura5.PNG)
 <center><b>Figura 5.</b> True Positives y Score F1 en función de la variable CTZSHP_CNTRY1_CD.</center>
@@ -225,8 +224,9 @@ Un Dashboard interactivo que contiene las visualizaciones mencionadas y compleme
 
 # 9. Conclusión
 
-FALTA
+La interpretación y mejora de los resultados de un modelo predictivo está sujeta a un extenso conocimiento de negocio e iteración continua. Métricas como la Área bajo la curva ROC resultan útiles para comparar de manera olística el desempeño de modelos, pero para considerar un modelo apto en producción debe ser elegido un treshold de probabilidad óptimo de acuerdo a las necesidades de negocio (por ejemplo, ¿qué volumen de verdaderos positivos puedo manejar con mi operación? ¿cuál es el costo-beneficio de etiquetar un cliente de manera incorrecta?).
 
+En el modelo descrito en el presente documento, se sugieren visualizaciones y méticas que pueden resultar útiles para llevar a cabo esta labor.
 
 # 10. Trabajo a futuro
 
