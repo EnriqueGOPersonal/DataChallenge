@@ -189,31 +189,35 @@ El modelo de regresión logística fue evaluado de manera olística sobre datos 
 El desempeño del modelo seleccionado se puede medir de manera alternativa para un treshold dado a través de medidas como el score F1, Precision, Recall, etc. dependiendo de las necesidades del negocio. 
 
 ![Figura1](images/Figura1.PNG)
+<center><b>Figura 1.</b> True Positive Ratio en función de False Positive Ratio al variar tresholds de probabilidad.</center>
 
 La Figura 1 nos muestra el costo-beneficio de la variación de un treshold a través de la visualización de los puntos de la curva ROC, brindando así una herramienta comparativa de fácil interpretación.
 
 ![Figura2](images/Figura2.PNG)
-Figura 2
+<center><b>Figura 2.</b> True Positive Ratio y Precisión en función del treshold de probabilidad</center>
 
-En la Figura 2 se observa de manera complementaria el costo-beneficio entre la Precisión y el TPR.
+En la Figura 2 se observa de manera complementaria el costo-beneficio que existe al intercambiar un aumento en el TPR a costa de disminuir la Precisión entre la Precisión y el TPR.
 
 ![Figura3](images/Figura3.PNG)
+<center><b>Figura 3.</b> Estadístico F1 en función del treshold de probabilidad.</center>
 
 Si se desea conocer el treshold en el cual el costo beneficio de la Figura 2 es más óptimo, se pueden comparar los distintos tresholds a través de la gráfica del score F1 (Figura 3), la cual revela que el treshold más óptimo (de mayor valor F1) es el de 0.34.
 
 Para dicho treshold, cualquier observación con una probabilidad de ser positivo mayor a 0.34 será categorizada como positiva.
 
 ![Figura4](images/Figura4.PNG)
+<center><b>Figura 4.</b> Score F1 en función del mes de alta de los clientes. </center>
 
-La Figura 4 muestra el desempeño del modelo para un treshold de 0.34 al medir el TPR en función del mes de alta en el que fue dado de alta el cliente, y cuenta con coloración determinada por la precisión, donde la escala de tipo semáforo corresponde a valores rojos para menor precisión y valores verdes para mayor precisión. 
+La Figura 4 muestra el desempeño del modelo para un treshold de 0.34 al medir el score F1 en función del mes de alta en el que fue dado de alta el cliente, se percibe una tendencia a obtener menores scores F1 para clientes con menor antiguedad.
 
 Las 4 variables con mayor importancia en el modelo seleccionado son: *CTZSHP_CNTRY2_CD*, *CTZSHP_CNTRY1_CD*, *CD_OCUPACION* y *RES_CNTRY_CD*.
 
 ![Figura5](images/Figura5.PNG)
+<center><b>Figura 5.</b> True Positives y Score F1 en función de la variable CTZSHP_CNTRY1_CD.</center>
 
 La Figura 5 ejemplifica una visualización sugerida para evaluar el impacto que tiene la una variable (en este caso CTZSHP_CNTRY1_CD) sobre el desempeño del modelo. Mayor análisis y conocimiento del negocio se requieren para generar hipótesis al respecto.
 
-Un Dashboard interactivo con las visualizaciones mencionadas y complementarias se ubica en la ruta:
+Un Dashboard interactivo que contiene las visualizaciones mencionadas y complementarias se ubica en la ruta:
 
 ```
 \SDATOOL-31455\Modelos\"Data Challenge - Caso 2"\"BASEMODELO_lr_prediction.pbix"
