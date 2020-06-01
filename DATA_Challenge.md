@@ -2,8 +2,27 @@ Data Challenge 2
 ----------------------
 
 Table of contents (up to date)
-- [Descripción](#descripción-de-proyecto-y-objetivo)
-- [Selección de variables](#15-selección-de-variables)
+- [1. Descripción de proyecto y objetivo](#1-descripción-de-proyecto-y-objetivo)
+- [2. Cararísticas técnicas](#2-cararísticas-técnicas)
+  - [2.1. Lenguajes de programación](#21-lenguajes-de-programación)
+  - [2.2. Librerías de Python:](#22-librerías-de-python)
+  - [2.3. IDE de ejecución de código](#23-ide-de-ejecución-de-código)
+  - [2.4. Software de Visualización de datos](#24-software-de-visualización-de-datos)
+- [3. Descripción de datos](#3-descripción-de-datos)
+- [4. Carga y unión de datos](#4-carga-y-unión-de-datos)
+  - [4.1. Variables Categóricas](#41-variables-categóricas)
+  - [4.2. Variables Numéricas](#42-variables-numéricas)
+  - [4.3. Variable Dependiente (Categórica):](#43-variable-dependiente-categórica)
+- [5. Selección de variables](#5-selección-de-variables)
+  - [5.1. Combinación variable numérica con variable numérica](#51-combinación-variable-numérica-con-variable-numérica)
+  - [5.2. Combinación variable numérica con variable categórica](#52-combinación-variable-numérica-con-variable-categórica)
+  - [5.3. Combinación variable categórica con variable categórica](#53-combinación-variable-categórica-con-variable-categórica)
+- [6. Generación de modelos](#6-generación-de-modelos)
+- [7. Entrenamiento y selección de modelos](#7-entrenamiento-y-selección-de-modelos)
+- [8. Evaluación de modelo](#8-evaluación-de-modelo)
+- [9. Conclusión](#9-conclusión)
+- [10. Trabajo a futuro](#10-trabajo-a-futuro)
+- [11. Contacto](#11-contacto)
 
 # 1. Descripción de proyecto y objetivo
 
@@ -238,8 +257,6 @@ En cuanto a una mejora de la estructura del código se podría hacer modular por
 
 # 11. Contacto
 
-Julio Sánchez González - <julio.sanchez.gonzalez@bbva.com>
-
-Luis Enrique García Orozco - <luisenrique.garcia.orozco@bbva.com>
-
-Uri Eduardo Ramírez Pasos - <urieduardo.ramirez.contractor@bbva.com>
+* Julio Sánchez González - <julio.sanchez.gonzalez@bbva.com>
+* Luis Enrique García Orozco - <luisenrique.garcia.orozco@bbva.com>
+* Uri Eduardo Ramírez Pasos - <urieduardo.ramirez.contractor@bbva.com>
