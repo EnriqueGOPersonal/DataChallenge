@@ -32,18 +32,13 @@
 <ul>
 <li><a href="#21-lenguajes-de-programaci%C3%B3n">2.1. Lenguajes de programación</a></li>
 <li><a href="#22-librer%C3%ADas-de-python">2.2. Librerías de Python:</a></li>
-<li><a href="#23-ide-de-ejecuci%C3%B3n-de-c%C3%B3digo">2.3. IDE de ejecución de código</a></li>
-<li><a href="#24-software-de-visualizaci%C3%B3n-de-datos">2.4. Software de Visualización de datos</a></li>
+<li><a href="#23-framework-de-computaci%C3%B3n-en-cl%C3%BAster">2.3. Framework de computación en clúster</a></li>
+<li><a href="#24-ide-de-ejecuci%C3%B3n-de-c%C3%B3digo">2.4. IDE de ejecución de código</a></li>
+<li><a href="#25-software-de-visualizaci%C3%B3n-de-datos">2.5. Software de Visualización de datos</a></li>
 </ul>
 </li>
 <li><a href="#3-descripci%C3%B3n-de-datos">3. Descripción de datos</a></li>
-<li><a href="#4-carga-y-uni%C3%B3n-de-datos">4. Carga y unión de datos</a>
-<ul>
-<li><a href="#41-variables-categ%C3%B3ricas">4.1. Variables Categóricas</a></li>
-<li><a href="#42-variables-num%C3%A9ricas">4.2. Variables Numéricas</a></li>
-<li><a href="#43-variable-dependiente-categ%C3%B3rica">4.3. Variable Dependiente (Categórica):</a></li>
-</ul>
-</li>
+<li><a href="#4-carga-limpieza-y-divisi%C3%B3n-de-datos">4. Carga, limpieza y división de datos</a></li>
 <li><a href="#5-selecci%C3%B3n-de-variables">5. Selección de variables</a>
 <ul>
 <li><a href="#51-combinaci%C3%B3n-variable-num%C3%A9rica-con-variable-num%C3%A9rica">5.1. Combinación variable numérica con variable numérica</a></li>
@@ -59,8 +54,8 @@
 <li><a href="#11-contacto">11. Contacto</a></li>
 </ul>
 <h1 id="1-descripción-de-proyecto-y-objetivo">1. Descripción de proyecto y objetivo</h1>
-<p>Los créditos que ofrecen los bancos varían ampliamente por tasa, importe y plazo. Para incrementar el rendemiento de préstamos crediticios, los bancos deben identificar qué condiciones bancarias y demográficas incrementan la probabilidad de que el cliente acepte una oferta de crédito.</p>
-<p>En este proyecto utilizamos la riqueza informacional que BBVA Perú proporciona sobre clientes y sus transacciones para explotarla a través de modelos de clasificación de Machine Learning que ayuden a identificar las condiciones de préstamo bajo las que un cliente aceptará una oferta crediticia.</p>
+<p>La prevención de lavado de dinero conlleva la investigación exhaustiva de casos sospechosos por parte de especialistas Para reducir la carga laboral y aumentar la proporción de casos sospechosos que finalmente resulten en una dictaminación positiva, los bancos deben identificar qué comportamientos, condiciones bancarias y demográficas incrementan la probabilidad de que el cliente haya cometido blanqueo de capitales.</p>
+<p>En este proyecto utilizamos la riqueza informacional que se nos proporcionó sobre clientes y sus transacciones para explotarla a través de modelos de clasificación de Machine Learning que ayuden a identificar las variables más estrechamente asociadas con el lavado de dinero.</p>
 <h1 id="2-cararísticas-técnicas">2. Cararísticas técnicas</h1>
 <h2 id="21-lenguajes-de-programación">2.1. Lenguajes de programación</h2>
 <ul>
@@ -69,8 +64,8 @@
 <h2 id="22-librerías-de-python">2.2. Librerías de Python:</h2>
 <ul>
 <li>
-<p>[Tensorflow FALTA VERSION][FALTA LINK]</p>
-<p>FALTA PARA QUE SIRVIÓ</p>
+<p><a href="https://www.tensorflow.org">Tensorflow 2.2.0</a></p>
+<p>Uso para construcción de redes neuronales.</p>
 </li>
 <li>
 <p><a href="https://pandas.pydata.org/">Pandas 1.0.3</a></p>
@@ -81,42 +76,45 @@
 <p>Uso para modificación, identificación y manejo de los datos.</p>
 </li>
 <li>
-<p>[PySpark FALTA VERSION](FALTA LINK)</p>
+<p><a href="https://spark.apache.org/docs/latest/api/python/index.html">PySpark 2.4.5</a></p>
 <p>Uso para obtención de datos estadísticos <em>T-Test</em> y prubeas de normalidad <em>Shapiro-Wilk</em>.</p>
 <p>Uso para selección de variables; procesamiento, imputación y trasformación de datos; entranmiento y selcción del modelo. (<em>Random Forest</em>, <em>Logistic Regression</em>)</p>
 </li>
 <li>
-<p>[functools FALTA VERSION](FALTA LINK)</p>
-<p>Uso para obtención de datos estadísticos <em>T-Test</em> y prubeas de normalidad <em>Shapiro-Wilk</em>.</p>
+<p><a href="https://docs.python.org/3/library/functools.html">functools 3.8</a></p>
+<p>Uso para la unión de más de 2 DataFrames con la función <em>reduce</em>.</p>
 </li>
 <li>
-<p>[iterools FALTA VERSION](FALTA LINK)</p>
-<p>FALTA PARA QUE SIRVIÓ</p>
+<p><a href="https://docs.python.org/2/library/itertools.html">iterools 8.3.0</a></p>
+<p>Uso para realizar un producto de 2 parámetros para el entrenamiento tipo <em>GridSearch</em> de la red neuronal.</p>
 </li>
 </ul>
-<h2 id="23-ide-de-ejecución-de-código">2.3. IDE de ejecución de código</h2>
+<h2 id="23-framework-de-computación-en-clúster">2.3. Framework de computación en clúster</h2>
 <ul>
-<li>[COLAB](FALTA LINK)</li>
+<li><a href="https://spark.apache.org">Apache Spark 2.4.1</a></li>
 </ul>
-<h2 id="24-software-de-visualización-de-datos">2.4. Software de Visualización de datos</h2>
+<h2 id="24-ide-de-ejecución-de-código">2.4. IDE de ejecución de código</h2>
 <ul>
-<li>[Power BI](FALTA LINK)</li>
+<li><a href="https://colab.research.google.com/notebooks/intro.ipynb">COLAB</a></li>
+</ul>
+<h2 id="25-software-de-visualización-de-datos">2.5. Software de Visualización de datos</h2>
+<ul>
+<li><a href="https://powerbi.microsoft.com/">Power BI</a></li>
 </ul>
 <h1 id="3-descripción-de-datos">3. Descripción de datos</h1>
+<p><strong>BASEMODELO.csv</strong> contiene registros de clientes que fueron evaluados para hacer la dictaminación de lavado de dinero. Incluye información demográfica, información bancaria del cliente, así como detalles de transacciones bancarias (montos y provenencias/destinos).</p>
 <p>Los datos empleados se encuentran descritos a profundidad en el archivo situado en la ruta:</p>
 <pre><code><code><div>\SDATOOL-31455\Modelos\&quot;Data Challenge - Caso 2&quot;\&quot;diccionario_data.xlsx&quot;
 </div></code></code></pre>
-<h1 id="4-carga-y-unión-de-datos">4. Carga y unión de datos</h1>
-<p>Los datos de las tablas descritas en la sección Descripción de datos fueron unidos en una tabla
-de granularidad - mes de cotización / código de cliente.</p>
-<p>En caso de que existieran registros repetidos para la combinación -mes de cotización /código de cliente- se generaron distintos tipos de agregaciones de acuerdo a el tipo de variable.</p>
-<h2 id="41-variables-categóricas">4.1. Variables Categóricas</h2>
-<p>Conteo de cantidad de registros de cada valor de la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos solicitudes con garantía &quot;A&quot; y una solicitud con garantía &quot;B&quot;, se genera una columna llamada &quot;garantia_A_cnt&quot; con valor de 2 y una columna llamada &quot;garantia_B_cnt&quot; con valor de 1. El resto de columnas generadas para el resto de valores observados se mostrarán como 0.</p>
-<h2 id="42-variables-numéricas">4.2. Variables Numéricas</h2>
-<p>Promedio, máximo y mínimo de los valores observados para dicha la variable. Por ejemplo, si en un mismo mes de cotización para un mismo cliente se tienen dos importes uno con valor de 200 y otro con valor de 300, se generarán las columnas &quot;importe_avg&quot; con valor de 250, &quot;importe_max&quot; con valor de 300 e &quot;importe_min&quot; con valor de 200. Cuando no existen observaciones se mostrará 0 en todas las columnas.</p>
-<h2 id="43-variable-dependiente-categórica">4.3. Variable Dependiente (Categórica):</h2>
-<p>Como se desea conservar la variable con valores de 1 y 0 únicamente, cuando aparecen dos solicitudes indistinguibles el mismo mes, se combinan en una sola solicitud que toma el valor de 1 si alguna de las dos fue aceptada y de 0 si ninguna lo fue. Adicionalmente se crea una columna con la cantidad de solicitudes encontradas para la el mismo mes de cotización para un mismo cliente.</p>
+<h1 id="4-carga-limpieza-y-división-de-datos">4. Carga, limpieza y división de datos</h1>
+<p>La base de datos fue sometida al siguiente preprocesamiento. Registros que para el feature EDAD presentaran un valor negativo o igual o mayor a 100, se les imputó el valor nulo.</p>
+<p>Filas duplicadas fueron removidas, así como registros que no tuvieran el campo de identificación de cliente, CUST_INTRL_ID, informado.</p>
+<p>Para reducir el número de categorías del feature actividad económica (CD_ACT_GIRO, 1102 categorías), todos los registros con un código de actividad económica que figure menos de 1000 veces, fueron imputados con el valor &quot;Otros&quot;. Otras features fueron simplemente removidas por tener demasiadas categorías (p. ej., CD_SUC_ALTA_CTE, con 5576 categorías)</p>
+<p>Después de reordenar todos los registros de manera aleatoria, un quinto fue reservado para posteriormente evaluar las predicciones producidas por los modelos entrenados con los cuatro quintos restantes.</p>
+<p>Para variables categóricas, los valores nulos fueron remplazados por &quot;Missing&quot; y para las numéricas fueron reemplazados por la mediana.</p>
+<p>La división de features por tipo de variable está a cargo de la función <code>split_columns_by_type</code>, la cual identifica los tipos numéricos (double, integer, long), categóricos (string), de fecha (timestamp) y binarias (byte).</p>
 <h1 id="5-selección-de-variables">5. Selección de variables</h1>
+<p>La selección de variables se llevó a cabo utilizando distintos métodos de filtraje dependiendo de la relación entre columnas y su tipo variable (numéricas, categóricas, etc.).</p>
 <h2 id="51-combinación-variable-numérica-con-variable-numérica">5.1. Combinación variable numérica con variable numérica</h2>
 <p>Coeficiente de correlación</p>
 <p>Es una medida de dependencia lineal entre dos variables aleatorias cuantitativas. El valor del índice de correlación varía en el intervalo [-1,1], indicando el signo el sentido de la relación, y donde mayor sea el valor absoluto del índice de correlacion, existe más dependencia lineal.</p>
@@ -128,65 +126,39 @@ de granularidad - mes de cotización / código de cliente.</p>
 <h2 id="53-combinación-variable-categórica-con-variable-categórica">5.3. Combinación variable categórica con variable categórica</h2>
 <p>En este proceso se uso el método <img src="https://latex.codecogs.com/svg.latex?\chi^{2}" title="\chi^{2}" /> el cual se seleccionan las variables con los mayores resultados en el test estadistico chi-squared que determina la dependencia entre variables y el objetivo; de esta manera se podrá validar si son independiente e irrelevantes para la clasificación.</p>
 <p>En este ejemplo se obtuvieron aquellas variables cuyo valor p fuera mayor a 0.05 se desestimarían, ya que su significado estadístico es muy bajo y es irrelevante para el entrenamiento del modelo.</p>
-<pre><code class="language-python"><div>chi_scores = chi2(x,y)
-p_values = pd.Series(chi_scores[<span class="hljs-number">1</span>], index = x.columns)
-droped_chi2_cols = p_values[p_values &gt; <span class="hljs-number">0.05</span>].index.to_list()
-</div></code></pre>
 <h1 id="6-generación-de-modelos">6. Generación de modelos</h1>
-<p>La generación de modelos se basó en el entrenamiento de <strong>Random Forest</strong> y <strong>Logistic Regression</strong> para cada mes definido en un rango de fecha mínima y fecha máxima de la variable <strong>MES_COTIZACION</strong>. La información de entrenamiento <em>train</em> se define como toda aquella que sea anterior a la fecha seleccionada. La información de prueba <em>test</em> se define como la misma que se esté seleccionando:</p>
-<pre><code class="language-python"><div><span class="hljs-keyword">for</span> month <span class="hljs-keyword">in</span> dt_range:   
-    train_temp = train[train.MES_COTIZACION &lt;= month]
-    test_temp  = test[test.MES_COTIZACION == month]
-</div></code></pre>
-<p>Teniendo el subset de datos de entrenamiento, se procesaran en una etapa llamada <em><strong>preprocess</strong></em> definida en un <em>Pipeline</em>, el cual se divide en 3 etapas:</p>
-<pre><code class="language-python"><div>preprocessor = ColumnTransformer(
-    transformers=[
-        (<span class="hljs-string">"feature_select"</span>, feature_selector, droped_cols),
-        (<span class="hljs-string">"cat"</span>, categorical_transformer, final_cat_cols),
-        (<span class="hljs-string">'num'</span>, numeric_transformer, final_num_cols)
-])
-</div></code></pre>
+<p>La generación de modelos se basó en el entrenamiento de <strong>Random Forest</strong>, <strong>Logistic Regression</strong> y <strong>Neuronal Network</strong> para un 80% del Dataset y un 20% para test.</p>
+<p>El procesamiento previo a la introducción de los datos en el modelo (de ahora en adelante <em><strong>preprocessor</strong></em>) consta de 4 etapas fundamentales para la transformación de los datos que se añadirán a un arreglo llamado <em>stages</em> que funcionará como parámetro para el <em>Pipeline</em> de transformación:</p>
 <ul>
-<li><em><strong>feature_select</strong></em>: Desestimación de variables que fueron designadas por la selección de variables como &quot;poco informativas&quot; para el entramiento del modelo. Se usaron cuatro métodos estadísticos:
-<ul>
-<li>Desestimación por porcentaje de nulos.</li>
-<li>Desestimación por Coeficiones de Correlación de Pearson.</li>
-<li>Desestimación por T-Test.</li>
-<li>Desestimación por Chi^2.</li>
+<li><em><strong>Imputer</strong></em>: Se imputaros valores de la mediana en datos vacíos para variables numéricas y la constante &quot;<em>missing</em>&quot; para variables categóricas.</li>
 </ul>
-</li>
-</ul>
-<pre><code class="language-python"><div>dropped_cols = dropped_null_cols + dropped_corr_cols + dropped_ttest_cols + dropped_chi2_cols
+<pre><code class="language-python"><div>cat_imputer = CategoricImputer(column_list = categoric_columns)
+stages += [cat_imputer]
 
-feature_selector = Pipeline(steps = [
-    (<span class="hljs-string">"dropper"</span>, MultiColumnDropper(dropped_cols))
-])
+num_imputer = Imputer(inputCols= numeric_columns, outputCols=numeric_columns).setStrategy(<span class="hljs-string">"median"</span>)
+stages += [num_imputer]
 </div></code></pre>
 <ul>
-<li><em><strong>numeric_transformer</strong></em>: Adpatación y ajuste de datos numéricos en dos etapas:
-<ul>
-<li>Imputación de la mediana a registros nulos.</li>
-<li>Estandariazción de datos removiendo la media y escalando a la variación unitaria.</li>
+<li><em><strong>StandardScaler</strong></em>: Estandariazción de datos de variables numéricas removiendo la media y escalando a la variación unitaria.</li>
 </ul>
-</li>
-</ul>
-<pre><code class="language-python"><div>numeric_transformer = Pipeline(steps=[
-    (<span class="hljs-string">'imputer'</span>, SimpleImputer(strategy=<span class="hljs-string">'median'</span>)),
-    (<span class="hljs-string">'scaler'</span>, StandardScaler())
-])
+<pre><code class="language-python"><div>scaler = StandardScaler(inputCol = <span class="hljs-string">"numeric_columns"</span>, outputCol = <span class="hljs-string">"numeric_columns_scaled"</span>)
+stages += [scaler]
 </div></code></pre>
 <ul>
-<li><em><strong>categorical_transformer</strong></em>: Ajuste y codificación de datos categóricos en dos etapas:
+<li><em><strong>StringIndexer y OneHotEncoder</strong></em>: Asignación de índices para cada categoría y aplicación del concepto de <em>OneHotEncoder</em> para varaibles categóricas.</li>
+</ul>
+<pre><code class="language-python"><div><span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> categoric_columns:
+    stringIndexer = StringIndexer(inputCol = c, outputCol= c + <span class="hljs-string">"_index"</span>, handleInvalid= <span class="hljs-string">"keep"</span>)
+    stages += [stringIndexer]
+
+encoder = OneHotEncoderEstimator(inputCols= cat_cols_index, outputCols = cat_cols_enc)
+stages += [encoder]
+</div></code></pre>
 <ul>
-<li>Imputación de un valor constante <em>missing</em> a registros nulos.</li>
-<li>Aplicar <em>OneHotEncoder</em> para cada categoría.</li>
+<li><em><strong>VectorAssembler</strong></em>: Vectorización de todas las variables resultantes de una sola columna llamada <em>features</em>.</li>
 </ul>
-</li>
-</ul>
-<pre><code class="language-python"><div>categorical_transformer = Pipeline(steps=[
-    (<span class="hljs-string">'imputer'</span>, SimpleImputer(strategy=<span class="hljs-string">'constant'</span>, fill_value=<span class="hljs-string">'missing'</span>)),
-    (<span class="hljs-string">'onehot'</span>, OneHotEncoder(handle_unknown = <span class="hljs-string">"ignore"</span>, sparse = <span class="hljs-literal">False</span>))
-])
+<pre><code class="language-python"><div>assembler = VectorAssembler(inputCols = features, outputCol= <span class="hljs-string">"features"</span>)
+stages += [assembler]
 </div></code></pre>
 <h1 id="7-entrenamiento-y-selección-de-modelos">7. Entrenamiento y selección de modelos</h1>
 <p>Realizar pruebas con los modelos usando los mismos datos con los que fueron entrenados conduce a un sobreajuste de los parámetros, lo cual limita la aplicabilidad del algoritmo a datos nuevos.</p>
@@ -202,9 +174,10 @@ feature_selector = Pipeline(steps = [
 </ul>
 <p>Para el modelo de red neuronal <em>fully connected</em> los hiperparámetros a evaluar fueron:</p>
 <ul>
-<li><code> [ ]</code> FALTA</li>
+<li><code> [0.0, 0.1, 0.2]</code> como la tasa de probabilidad de entrenamiento de un nodo de la Red Nueronal, conocido como <em>Dropout Rate</em>.</li>
+<li><code> [0.1, 0.01, 0.001]</code> como la tasa de regularización tipo <em>Ridge</em> conocidoc como <strong>L2</strong>.</li>
 </ul>
-<p>La selección de parametros para cada modelo fue de [FALTA] para regresión logística, [50 arboles de decisión] para bosque aleatorio y [FALTA] para la red neuronal.</p>
+<p>La selección de parametros para cada modelo fue de [0.001 para el valor C] para regresión logística, [50 arboles de decisión] para bosque aleatorio y [0.0 para Dropout Rate y 0.0 para L2] para la red neuronal.</p>
 <p>Como métrica para seleccionar el mejor modelo se utilizó el Área bajo la curva ROC, en la cual el modelo de regresión logísitca obtuvo un mejor puntaje (AUC ROC = 0.8639).</p>
 <h1 id="8-evaluación-de-modelo">8. Evaluación de modelo</h1>
 <p>El modelo de regresión logística fue evaluado sobre datos no observados en ninguna etapa de su entrenamiento con un resultado de AUC = 0.8438</p>
@@ -232,13 +205,15 @@ feature_selector = Pipeline(steps = [
 <p>La interpretación y mejora de los resultados de un modelo predictivo está sujeta a un extenso conocimiento de negocio e iteración continua. Métricas como la Área bajo la curva ROC resultan útiles para comparar de manera olística el desempeño de modelos, pero para considerar un modelo apto en producción debe ser elegido un treshold de probabilidad óptimo de acuerdo a las necesidades de negocio (por ejemplo, ¿qué volumen de verdaderos positivos puedo manejar con mi operación? ¿cuál es el costo-beneficio de etiquetar un cliente de manera incorrecta?).</p>
 <p>En el modelo descrito en el presente documento, se sugieren visualizaciones y méticas que pueden resultar útiles para llevar a cabo esta labor.</p>
 <h1 id="10-trabajo-a-futuro">10. Trabajo a futuro</h1>
-<p>Sin duda se podría hacer un trabajo mucho más exhaustivo en la exploración y análisis de los datos, así como la recopilación y agregación de fuentes de información que tengan relación con los datos. Algunos ejemplos para la recopilación de información de otras fuentes puede ser el uso de <strong>web scrapping</strong>, el cual se implemento de manera muy básica, pero podrían agregarse muchos más datos como el nivel socioeconómico y nivel de riesgo basado en su ubicación, valor de la moneda, temporada de alto o bajo gasto económico, información política y económica, etc. Esto puede ayudar bastante a determinar la relación de nueva información con la variable dependiente y mejorar los resultados del entrenamiento del modelo.</p>
+<p>Sin duda se podría hacer un trabajo mucho más exhaustivo en la exploración y análisis de los datos, así como la recopilación y agregación de fuentes de información que tengan relación con los datos. Algunos ejemplos para la recopilación de información de otras fuentes puede ser el uso de <strong>web scrapping</strong>, el cual se implementó de manera muy básica, pero podrían agregarse muchos más datos como el nivel socioeconómico y nivel de riesgo basado en su ubicación, valor de la moneda, temporada de alto o bajo gasto económico, información política y económica, etc. Esto puede ayudar bastante a determinar la relación de nueva información con la variable dependiente y mejorar los resultados del entrenamiento del modelo.</p>
 <p>Para una mejora de la exploración de los datos para el entrenamiento del modelo se podrían implementar técnicas orientadas al <strong>análisis descriptivo y dispersivo</strong> (ANOVA) usando pruebas estadisticas como la desviación estándar y/o el rango intercuartil mostrados en gráficas para conocer más a fondo la relación, patrones y variación de los datos. Existe una herramienta llamada <strong>Monte Carlo Simulation</strong> la cual calcula el efecto de variables impredecibles en un factor específico. Otro ejemplo es el <strong>Análisis Discriminatorio Lineal</strong> (LDA) que utiliza variables continuas independientes y categóricas dependientes, el cual podría ser útil para obtener una combinación lineal de variables que logren caracterizar las clases y poder reducir algunas la dimensionalidad del data set dado que haciendo el <em>OneHotEncoding</em> de las categoricas, el data set crece bastante en columnas.</p>
 <p>En cuanto a una mejora de la estructura del código se podría hacer modular por funciones y escalable a la agregación y adaptación de nuevas herramientas.</p>
 <h1 id="11-contacto">11. Contacto</h1>
-<p>Julio Sánchez González - <a href="mailto:julio.sanchez.gonzalez@bbva.com">julio.sanchez.gonzalez@bbva.com</a></p>
-<p>Luis Enrique García Orozco - <a href="mailto:luisenrique.garcia.orozco@bbva.com">luisenrique.garcia.orozco@bbva.com</a></p>
-<p>Uri Eduardo Ramírez Pasos - <a href="mailto:urieduardo.ramirez.contractor@bbva.com">urieduardo.ramirez.contractor@bbva.com</a></p>
+<ul>
+<li>Julio Sánchez González - <a href="mailto:julio.sanchez.gonzalez@bbva.com">julio.sanchez.gonzalez@bbva.com</a></li>
+<li>Luis Enrique García Orozco - <a href="mailto:luisenrique.garcia.orozco@bbva.com">luisenrique.garcia.orozco@bbva.com</a></li>
+<li>Uri Eduardo Ramírez Pasos - <a href="mailto:urieduardo.ramirez.contractor@bbva.com">urieduardo.ramirez.contractor@bbva.com</a></li>
+</ul>
 
     </body>
     </html>

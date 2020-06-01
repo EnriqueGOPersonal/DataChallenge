@@ -11,9 +11,6 @@ Table of contents (up to date)
   - [2.5. Software de Visualización de datos](#25-software-de-visualización-de-datos)
 - [3. Descripción de datos](#3-descripción-de-datos)
 - [4. Carga, limpieza y división de datos](#4-carga-limpieza-y-división-de-datos)
-  - [4.1. Variables Categóricas](#41-variables-categóricas)
-  - [4.2. Variables Numéricas](#42-variables-numéricas)
-  - [4.3. Variable Dependiente (Categórica):](#43-variable-dependiente-categórica)
 - [5. Selección de variables](#5-selección-de-variables)
   - [5.1. Combinación variable numérica con variable numérica](#51-combinación-variable-numérica-con-variable-numérica)
   - [5.2. Combinación variable numérica con variable categórica](#52-combinación-variable-numérica-con-variable-categórica)
@@ -27,9 +24,9 @@ Table of contents (up to date)
 
 # 1. Descripción de proyecto y objetivo
 
-La prevención de lavado de dinero conlleva la investigación exhaustiva de casos sospechosos por parte de especialistas. Para reducir la carga laboral y aumentar la proporción de casos sospechosos que finalmente resulten en una dictaminación positiva, los bancos deben identificar qué condiciones bancarias y demográficas incrementan la probabilidad de que el cliente haya cometido blanqueo de capitales. 
+La prevención de lavado de dinero conlleva la investigación exhaustiva de casos sospechosos por parte de especialistas Para reducir la carga laboral y aumentar la proporción de casos sospechosos que finalmente resulten en una dictaminación positiva, los bancos deben identificar qué comportamientos, condiciones bancarias y demográficas incrementan la probabilidad de que el cliente haya cometido blanqueo de capitales.
 
-En este proyecto utilizamos la riqueza informacional que BBVA nos proporcionó sobre clientes y sus transacciones para explotarla a través de modelos de clasificación de Machine Learning que ayuden a identificar las variables más estrechamente asociadas con el lavado de dinero. 
+En este proyecto utilizamos la riqueza informacional que se nos proporcionó sobre clientes y sus transacciones para explotarla a través de modelos de clasificación de Machine Learning que ayuden a identificar las variables más estrechamente asociadas con el lavado de dinero. 
 
 # 2. Cararísticas técnicas
 
@@ -79,25 +76,31 @@ En este proyecto utilizamos la riqueza informacional que BBVA nos proporcionó s
 
 # 3. Descripción de datos
 
+**BASEMODELO.csv** contiene registros de clientes que fueron evaluados para hacer la dictaminación de lavado de dinero. Incluye información demográfica, información bancaria del cliente, así como detalles de transacciones bancarias (montos y provenencias/destinos).
+
 Los datos empleados se encuentran descritos a profundidad en el archivo situado en la ruta:
 
 ``` 
 \SDATOOL-31455\Modelos\"Data Challenge - Caso 2"\"diccionario_data.xlsx"
 ```
 
-**BASEMODELO.csv** contiene registros de clientes que fueron evaluados para hacer la dictaminación de lavado de dinero. Incluye información demográfica, información bancaria del cliente, así como detalles de transacciones bancarias (montos y provenencias/destinos).
-
 # 4. Carga, limpieza y división de datos
 
-La base de datos fue sometida al siguiente preprocesamiento. Registros que para el feature EDAD presentaran un valor negativo o igual o mayor a 100, se les imputó el valor nulo. Filas duplicadas fueron removidas, así como registros que no tuvieran el campo de identificación de cliente, CUST_INTRL_ID, informado. Para reducir el número de categorías del feature actividad económica (CD_ACT_GIRO, 1102 categorías), todos los registros con un código de actividad económica que figure menos de 1000 veces, fueron imputados con el valor "Otros". Otras features fueron simplemente removidas por tener demasiadas categorías (p. ej., CD_SUC_ALTA_CTE, con 5576 categorías)
+La base de datos fue sometida al siguiente preprocesamiento. Registros que para el feature EDAD presentaran un valor negativo o igual o mayor a 100, se les imputó el valor nulo. 
+
+Filas duplicadas fueron removidas, así como registros que no tuvieran el campo de identificación de cliente, CUST_INTRL_ID, informado. 
+
+Para reducir el número de categorías del feature actividad económica (CD_ACT_GIRO, 1102 categorías), todos los registros con un código de actividad económica que figure menos de 1000 veces, fueron imputados con el valor "Otros". Otras features fueron simplemente removidas por tener demasiadas categorías (p. ej., CD_SUC_ALTA_CTE, con 5576 categorías)
 
 Después de reordenar todos los registros de manera aleatoria, un quinto fue reservado para posteriormente evaluar las predicciones producidas por los modelos entrenados con los cuatro quintos restantes.
 
-Para variables categóricas, los valores nulos fueron remplazados por "Missing", para las numéricas por la media.
+Para variables categóricas, los valores nulos fueron remplazados por "Missing" y para las numéricas fueron reemplazados por la mediana.
 
-La división de features por tipo de variable está a cargo de la función ```split_columns_by_type```, la cual identifica los tipos numéricos (double, integer, long), categóricos (string), de fecha (timestamp) y en byte (byte).
+La división de features por tipo de variable está a cargo de la función ```split_columns_by_type```, la cual identifica los tipos numéricos (double, integer, long), categóricos (string), de fecha (timestamp) y binarias (byte).
 
 # 5. Selección de variables
+
+La selección de variables se llevó a cabo utilizando distintos métodos de filtraje dependiendo de la relación entre columnas y su tipo variable (numéricas, categóricas, etc.).
 
 ## 5.1. Combinación variable numérica con variable numérica
 
@@ -123,8 +126,9 @@ En este ejemplo se obtuvieron aquellas variables cuyo valor p fuera mayor a 0.05
 
 # 6. Generación de modelos
 
-La generación de modelos se basó en el entrenamiento de **Random Forest**, **Logistic Regression** y **Neuronal Network** para un 80% del Dataset y un 20% para test. La información de entrenamiento fue sometida a cierto procesamiento para terminar obteniendo un Dataset más limpio, con datos que ofrencen más información al modelo y menos redundantes.
-A este proceso le llamaremos ***preprocessor*** el cual consta de 4 etapas fundamentales para la transformación de los datos que se añadirán a un arreglo llamado *stages* que funcionará como parámetro para el *Pipeline* de transformación:
+La generación de modelos se basó en el entrenamiento de **Random Forest**, **Logistic Regression** y **Neuronal Network** para un 80% del Dataset y un 20% para test.
+
+El procesamiento previo a la introducción de los datos en el modelo (de ahora en adelante ***preprocessor***) consta de 4 etapas fundamentales para la transformación de los datos que se añadirán a un arreglo llamado *stages* que funcionará como parámetro para el *Pipeline* de transformación:
 
 - ***Imputer***: Se imputaros valores de la mediana en datos vacíos para variables numéricas y la constante "*missing*" para variables categóricas.
 ``` python
